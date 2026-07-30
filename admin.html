@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ADMIN - HSU LAB</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    #lock-screen { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:70vh; gap:16px; }
+    #admin-content { display:none; max-width:860px; margin:0 auto; padding:40px 20px 80px; }
+    .admin-section { margin-bottom:48px; }
+    .admin-section h2 { font-size:0.72rem; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:#888; border-bottom:2px solid #e2e8f0; padding-bottom:10px; margin-bottom:24px; }
+    .form-group { margin-bottom:16px; }
+    .form-group label { display:block; font-size:0.75rem; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:#555; margin-bottom:6px; }
+    .form-group input, .form-group textarea, .form-group select { width:100%; padding:10px 12px; font-size:0.88rem; font-family:'Montserrat',sans-serif; border:1px solid #ddd; border-radius:2px; outline:none; }
+    .form-group input:focus, .form-group textarea:focus { border-color:#2b6cb0; }
+    .form-group textarea { min-height:100px; resize:vertical; }
+    .btn { padding:10px 24px; font-family:'Montserrat',sans-serif; font-size:0.72rem; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; border:none; border-radius:2px; cursor:pointer; }
+    .btn-primary { background:#1a1a1a; color:#fff; }
+    .btn-primary:hover { background:#333; }
+    .btn-secondary { background:#f0f0f0; color:#333; margin-left:8px; }
+    .status-msg { margin-top:12px; padding:10px 14px; border-radius:2px; font-size:0.82rem; display:none; }
+    .status-success { background:#f0fff4; border:1px solid #68d391; color:#276749; }
+    .status-error { background:#fff5f5; border:1px solid #fc8181; color:#c53030; }
+    .token-setup { background:#fffbeb; border:1px solid #f6e05e; padding:16px; border-radius:2px; margin-bottom:28px; font-size:0.84rem; color:#744210; }
+    .token-setup input { margin-top:8px; }
+    .preview-box { background:#f7f8fa; border:1px solid #e2e8f0; padding:16px; border-radius:2px; margin-top:12px; font-size:0.84rem; display:none; }
+    .tabs { display:flex; gap:0; margin-bottom:32px; border-bottom:2px solid #e2e8f0; }
+    .tab { padding:10px 20px; font-size:0.72rem; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#888; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px; }
+    .tab.active { color:#1a1a1a; border-bottom-color:#1a1a1a; }
+    .tab-content { display:none; }
+    .tab-content.active { display:block; }
+    .hint { font-size:0.75rem; color:#888; margin-top:4px; }
+  </style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <a class="site-logo" href="index.html">HSU LAB</a>
+    <nav><ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="research.html">Research</a></li>
+      <li><a href="people.html">People</a></li>
+      <li><a href="publications.html">Publications</a></li>
+      <li><a href="positions.html">Positions</a></li>
+      <li><a href="news.html">News</a></li>
+      <li><a href="links.html">Links</a></li>
+    </ul></nav>
+  </div>
+</header>
+
+<div class="page-hero"><h1>Admin Panel</h1></div>
+
+<!-- Lock Screen -->
+<div id="lock-screen">
+  <p style="font-family:'Montserrat',sans-serif;font-size:0.8rem;letter-spacing:0.12em;text-transform:uppercase;color:#555;">Lab Manager Access Only</p>
+  <input id="pwd-input" type="password" placeholder="Enter password"
+    style="padding:10px 16px;font-size:0.9rem;border:1px solid #ccc;border-radius:2px;width:260px;outline:none;">
+  <button class="btn btn-primary" onclick="checkPassword()">Enter</button>
+  <p id="error-msg" style="color:#cc0000;font-size:0.8rem;display:none;">Incorrect password.</p>
+</div>
+
+<!-- Admin Content -->
+<div id="admin-content">
+
+  <!-- GitHub Token Setup -->
+  <div class="token-setup">
+    <strong>⚙️ GitHub Token</strong> — Enter your Personal Access Token once per session to enable automatic commits.
+    <div class="form-group" style="margin-top:8px;margin-bottom:0;">
+      <input type="password" id="github-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" style="font-family:monospace;">
+    </div>
+    <p class="hint" style="margin-top:6px;">Token is only stored in memory for this session. <a href="https://github.com/settings/tokens/new?scopes=repo&description=HsuLab+Admin" target="_blank">Generate a token here</a> (needs repo scope).</p>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('news')">News</div>
+    <div class="tab" onclick="switchTab('people')">People</div>
+    <div class="tab" onclick="switchTab('publications')">Publications</div>
+  </div>
+
+  <!-- NEWS TAB -->
+  <div id="tab-news" class="tab-content active">
+    <div class="admin-section">
+      <h2>Add News Item</h2>
+      <div class="form-group">
+        <label>Month (YYYY-MM)</label>
+        <input type="month" id="news-date" placeholder="2026-07">
+      </div>
+      <div class="form-group">
+        <label>News Text (HTML allowed for links)</label>
+        <textarea id="news-text" placeholder="Congrats to [Name] on publishing in <a href='URL' target='_blank'>Journal</a>!"></textarea>
+        <p class="hint">Tip: use &lt;a href='URL' target='_blank'&gt;text&lt;/a&gt; for links</p>
+      </div>
+      <button class="btn btn-primary" onclick="previewNews()">Preview</button>
+      <button class="btn btn-secondary" onclick="submitNews()">Commit to GitHub</button>
+      <div id="news-preview" class="preview-box"></div>
+      <div id="news-status" class="status-msg"></div>
+    </div>
+  </div>
+
+  <!-- PEOPLE TAB -->
+  <div id="tab-people" class="tab-content">
+    <div class="admin-section">
+      <h2>Add / Update Lab Member</h2>
+      <div class="form-group">
+        <label>Full Name & Degree</label>
+        <input type="text" id="person-name" placeholder="Jane Smith, Ph.D.">
+      </div>
+      <div class="form-group">
+        <label>Role</label>
+        <select id="person-role">
+          <option>Graduate Student</option>
+          <option>Postdoctoral Fellow</option>
+          <option>Research Scientist</option>
+          <option>Lab Manager</option>
+          <option>Undergraduate Researcher</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Years (e.g. 2024 – Present)</label>
+        <input type="text" id="person-years" placeholder="2024 – Present">
+      </div>
+      <div class="form-group">
+        <label>Hometown</label>
+        <input type="text" id="person-hometown" placeholder="Austin, TX">
+      </div>
+      <div class="form-group">
+        <label>Education (one line per degree)</label>
+        <textarea id="person-edu" placeholder="Ph.D. Chemistry, UT Austin&#10;B.S. Biochemistry, UCLA"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Hobbies</label>
+        <input type="text" id="person-hobbies" placeholder="hiking, cooking, reading">
+      </div>
+      <div class="form-group">
+        <label>Favorite molecule or organism</label>
+        <input type="text" id="person-fave" placeholder="caffeine">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="person-email" placeholder="name@utexas.edu">
+      </div>
+      <div class="form-group">
+        <label>Photo URL (from GitHub photos-files/ or full URL)</label>
+        <input type="text" id="person-photo" placeholder="photos-files/img-xxxx.jpg">
+      </div>
+      <button class="btn btn-primary" onclick="previewPerson()">Preview</button>
+      <button class="btn btn-secondary" onclick="submitPerson()">Commit to GitHub</button>
+      <div id="person-preview" class="preview-box"></div>
+      <div id="person-status" class="status-msg"></div>
+    </div>
+  </div>
+
+  <!-- PUBLICATIONS TAB -->
+  <div id="tab-publications" class="tab-content">
+    <div class="admin-section">
+      <h2>Add Publication</h2>
+      <div class="form-group">
+        <label>Publication Number</label>
+        <input type="number" id="pub-number" placeholder="86">
+      </div>
+      <div class="form-group">
+        <label>Authors (bold Hsu KL with **Hsu KL**)</label>
+        <textarea id="pub-authors" placeholder="Smith J, Jones A, **Hsu KL**."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Title</label>
+        <input type="text" id="pub-title" placeholder="Title of the paper.">
+      </div>
+      <div class="form-group">
+        <label>Journal, Year, Volume, Pages</label>
+        <input type="text" id="pub-journal" placeholder="J Am Chem Soc. 2026; 148(1): 1-10.">
+      </div>
+      <div class="form-group">
+        <label>DOI / URL</label>
+        <input type="url" id="pub-url" placeholder="https://doi.org/10.xxxx/xxxxx">
+      </div>
+      <div class="form-group">
+        <label>Notes (optional, e.g. [preprint])</label>
+        <input type="text" id="pub-notes" placeholder="[preprint]">
+      </div>
+      <button class="btn btn-primary" onclick="previewPub()">Preview</button>
+      <button class="btn btn-secondary" onclick="submitPub()">Commit to GitHub</button>
+      <div id="pub-preview" class="preview-box"></div>
+      <div id="pub-status" class="status-msg"></div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="footer-nav">
+    <a href="index.html">Home</a><span>·</span><a href="research.html">Research</a><span>·</span>
+    <a href="people.html">People</a><span>·</span><a href="publications.html">Publications</a><span>·</span>
+    <a href="positions.html">Positions</a><span>·</span><a href="news.html">News</a><span>·</span>
+    <a href="photos.html">Photos</a><span>·</span><a href="links.html">Links</a>
+  </div>
+  <p class="footer-copy">© Copyright 2015 | Hsu Laboratories | Department of Chemistry | University of Texas at Austin<br>
+  100 E 24th St | Austin, Texas 78712 | <a href="mailto:ken.hsu@austin.utexas.edu">Contact Us</a></p>
+</footer>
+
+<script>
+const REPO = "kenhsu7337/hsulab";
+const HASH = "e81c3209e3618eded239767792800a07160ee8a614d332838236c53695f7566a";
+
+// ---- Auth ----
+document.getElementById('pwd-input').addEventListener('keydown', e => { if(e.key==='Enter') checkPassword(); });
+
+async function checkPassword() {
+  const pwd = document.getElementById('pwd-input').value;
+  const enc = new TextEncoder().encode(pwd);
+  const buf = await crypto.subtle.digest('SHA-256', enc);
+  const hex = Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  if(hex === HASH) {
+    document.getElementById('lock-screen').style.display='none';
+    document.getElementById('admin-content').style.display='block';
+  } else {
+    document.getElementById('error-msg').style.display='block';
+    document.getElementById('pwd-input').value='';
+  }
+}
+
+// ---- Tabs ----
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+}
+
+// ---- GitHub API ----
+async function getFile(token, path) {
+  const r = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}`, {
+    headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
+  });
+  if(!r.ok) throw new Error(`Failed to get ${path}: ${r.status}`);
+  return r.json();
+}
+
+async function commitFile(token, path, content, message, sha) {
+  const r = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}`, {
+    method: 'PUT',
+    headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message, content: btoa(unescape(encodeURIComponent(content))), sha })
+  });
+  if(!r.ok) { const e = await r.json(); throw new Error(e.message); }
+  return r.json();
+}
+
+function getToken() {
+  const t = document.getElementById('github-token').value.trim();
+  if(!t) throw new Error('Please enter your GitHub token at the top of the page.');
+  return t;
+}
+
+function showStatus(id, msg, isError=false) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = `status-msg ${isError ? 'status-error' : 'status-success'}`;
+  el.style.display = 'block';
+}
+
+// ---- NEWS ----
+function previewNews() {
+  const date = document.getElementById('news-date').value;
+  const text = document.getElementById('news-text').value.trim();
+  if(!date || !text) { alert('Please fill in date and text.'); return; }
+  const [yr, mo] = date.split('-');
+  const monthName = new Date(yr, mo-1).toLocaleString('en',{month:'long'}).toUpperCase();
+  document.getElementById('news-preview').innerHTML = `<strong>${monthName} ${yr}</strong><br>• ${text}`;
+  document.getElementById('news-preview').style.display='block';
+}
+
+async function submitNews() {
+  const date = document.getElementById('news-date').value;
+  const text = document.getElementById('news-text').value.trim();
+  if(!date || !text) { alert('Please fill in date and text.'); return; }
+  showStatus('news-status', 'Committing...', false);
+  try {
+    const token = getToken();
+    const file = await getFile(token, 'news-data.js');
+    const current = decodeURIComponent(escape(atob(file.content.replace(/\n/g,''))));
+    
+    // Parse and add new entry
+    const newEntry = `  {\n    date: "${date}",\n    items: [\n      "${text.replace(/"/g,'\\"')}"\n    ]\n  },`;
+    const updated = current.replace('const HSU_LAB_NEWS = [', `const HSU_LAB_NEWS = [\n${newEntry}`);
+    
+    await commitFile(token, 'news-data.js', updated, `Add news item: ${date}`, file.sha);
+    showStatus('news-status', '✅ News item committed! Site will update in ~1 minute.');
+    document.getElementById('news-date').value='';
+    document.getElementById('news-text').value='';
+    document.getElementById('news-preview').style.display='none';
+  } catch(e) {
+    showStatus('news-status', `❌ Error: ${e.message}`, true);
+  }
+}
+
+// ---- PEOPLE ----
+function previewPerson() {
+  const name = document.getElementById('person-name').value;
+  const years = document.getElementById('person-years').value;
+  const hometown = document.getElementById('person-hometown').value;
+  const edu = document.getElementById('person-edu').value;
+  const hobbies = document.getElementById('person-hobbies').value;
+  const fave = document.getElementById('person-fave').value;
+  const email = document.getElementById('person-email').value;
+  const photo = document.getElementById('person-photo').value;
+  
+  document.getElementById('person-preview').innerHTML = `
+    <div style="display:flex;gap:16px;align-items:flex-start;">
+      ${photo ? `<img src="${photo}" style="width:80px;height:100px;object-fit:cover;">` : '<div style="width:80px;height:100px;background:#eee;"></div>'}
+      <div>
+        <strong>${name} (${years})</strong><br>
+        ${hometown ? `Where are you from? ${hometown}<br>` : ''}
+        ${edu ? `<strong>Education:</strong><br>${edu.replace(/\n/g,'<br>')}<br>` : ''}
+        ${hobbies ? `Hobbies: ${hobbies}<br>` : ''}
+        ${fave ? `Favorite: ${fave}<br>` : ''}
+        ${email ? `<a href="mailto:${email}">${email}</a>` : ''}
+      </div>
+    </div>`;
+  document.getElementById('person-preview').style.display='block';
+}
+
+async function submitPerson() {
+  const name = document.getElementById('person-name').value.trim();
+  const role = document.getElementById('person-role').value;
+  const years = document.getElementById('person-years').value.trim();
+  const hometown = document.getElementById('person-hometown').value.trim();
+  const edu = document.getElementById('person-edu').value.trim();
+  const hobbies = document.getElementById('person-hobbies').value.trim();
+  const fave = document.getElementById('person-fave').value.trim();
+  const email = document.getElementById('person-email').value.trim();
+  const photo = document.getElementById('person-photo').value.trim();
+  if(!name) { alert('Please enter a name.'); return; }
+  showStatus('person-status', 'Committing...', false);
+  
+  try {
+    const token = getToken();
+    const file = await getFile(token, 'people.html');
+    let html = decodeURIComponent(escape(atob(file.content.replace(/\n/g,''))));
+    
+    const eduLines = edu.split('\n').join('<br>\n        ');
+    const newBlock = `
+    <div class="person-row">
+      ${photo ? `<img src="${photo}" alt="${name}" onerror="this.style.display='none'">` : '<div class="person-photo-placeholder"></div>'}
+      <div class="person-info">
+        <h4>${name} (${years})</h4>
+        ${hometown ? `<p>Where are you from? ${hometown}</p>` : ''}
+        ${edu ? `<p><strong>Education:</strong><br>\n        ${eduLines}</p>` : ''}
+        ${hobbies ? `<p>Hobbies: ${hobbies}</p>` : ''}
+        ${fave ? `<p>Favorite organism or molecule: ${fave}</p>` : ''}
+        ${email ? `<p><a href="mailto:${email}">${email}</a></p>` : ''}
+      </div>
+    </div>`;
+
+    // Insert before the closing tag of the right group
+    const groupMap = {
+      'Graduate Student': '<!-- END GRAD STUDENTS -->',
+      'Postdoctoral Fellow': '<!-- END POSTDOCS -->',
+      'Research Scientist': '<!-- END RESEARCH SCIENTISTS -->',
+      'Lab Manager': '<!-- END LAB MANAGER -->',
+      'Undergraduate Researcher': '<!-- END UNDERGRADS -->'
+    };
+    const marker = groupMap[role];
+    if(marker && html.includes(marker)) {
+      html = html.replace(marker, newBlock + '\n    ' + marker);
+    } else {
+      // Fallback: insert before footer
+      html = html.replace('</main>', newBlock + '\n</main>');
+    }
+    
+    await commitFile(token, 'people.html', html, `Add lab member: ${name}`, file.sha);
+    showStatus('person-status', `✅ ${name} added to people page! Site will update in ~1 minute.`);
+  } catch(e) {
+    showStatus('person-status', `❌ Error: ${e.message}`, true);
+  }
+}
+
+// ---- PUBLICATIONS ----
+function previewPub() {
+  const num = document.getElementById('pub-number').value;
+  const authors = document.getElementById('pub-authors').value.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
+  const title = document.getElementById('pub-title').value;
+  const journal = document.getElementById('pub-journal').value;
+  const url = document.getElementById('pub-url').value;
+  const notes = document.getElementById('pub-notes').value;
+  
+  document.getElementById('pub-preview').innerHTML = `
+    <div style="display:flex;gap:12px;">
+      <span style="color:#aaa;font-weight:700;min-width:28px;">${num}.</span>
+      <span>${authors} <a href="${url}" target="_blank">${title}</a> <em>${journal}</em> ${notes}</span>
+    </div>`;
+  document.getElementById('pub-preview').style.display='block';
+}
+
+async function submitPub() {
+  const num = document.getElementById('pub-number').value;
+  const authors = document.getElementById('pub-authors').value.trim().replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
+  const title = document.getElementById('pub-title').value.trim();
+  const journal = document.getElementById('pub-journal').value.trim();
+  const url = document.getElementById('pub-url').value.trim();
+  const notes = document.getElementById('pub-notes').value.trim();
+  if(!num || !title) { alert('Please fill in number and title.'); return; }
+  showStatus('pub-status', 'Committing...', false);
+  
+  try {
+    const token = getToken();
+    const file = await getFile(token, 'publications.html');
+    let html = decodeURIComponent(escape(atob(file.content.replace(/\n/g,''))));
+    
+    const newEntry = `
+    <div class="pub-entry">
+      <div class="pub-number">${num}.</div>
+      <div class="pub-content">${authors} <a href="${url}" target="_blank">${title}</a> <em>${journal}</em>${notes ? ' ' + notes : ''}</div>
+    </div>`;
+    
+    // Insert after the Journal Articles h2
+    html = html.replace('<h2>Journal Articles</h2>', '<h2>Journal Articles</h2>\n' + newEntry);
+    
+    await commitFile(token, 'publications.html', html, `Add publication #${num}: ${title.substring(0,50)}`, file.sha);
+    showStatus('pub-status', `✅ Publication #${num} added! Site will update in ~1 minute.`);
+  } catch(e) {
+    showStatus('pub-status', `❌ Error: ${e.message}`, true);
+  }
+}
+</script>
+</body>
+</html>
