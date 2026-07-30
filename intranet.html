@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>INTRANET - HSU LAB</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <a class="site-logo" href="index.html">HSU LAB</a>
+    <nav><ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="research.html">Research</a></li>
+      <li><a href="people.html">People</a></li>
+      <li><a href="publications.html">Publications</a></li>
+      <li><a href="positions.html">Positions</a></li>
+      <li><a href="news.html">News</a></li>
+      <li><a href="links.html">Links</a></li>
+    </ul></nav>
+  </div>
+</header>
+
+<div id="lock-screen" style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:60vh; gap:16px;">
+  <p style="font-family:'Montserrat',sans-serif; font-size:0.8rem; letter-spacing:0.12em; text-transform:uppercase; color:#555;">Hsu Lab Intranet — Members Only</p>
+  <input id="pwd-input" type="password" placeholder="Enter password"
+    style="padding:10px 16px; font-size:0.9rem; border:1px solid #ccc; border-radius:2px; width:240px; outline:none;">
+  <button onclick="checkPassword()"
+    style="padding:10px 28px; font-family:'Montserrat',sans-serif; font-size:0.72rem; letter-spacing:0.12em; text-transform:uppercase; background:#1a1a1a; color:#fff; border:none; cursor:pointer; border-radius:2px;">
+    Enter
+  </button>
+  <p id="error-msg" style="color:#cc0000; font-size:0.8rem; display:none;">Incorrect password.</p>
+</div>
+
+<div id="intranet-content" style="display:none;">
+  <div class="site-wrapper" style="padding:48px 20px 80px;">
+    <h2 style="font-size:0.72rem; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:#888; border-bottom:2px solid #e2e8f0; padding-bottom:10px; margin-bottom:32px;">Lab Resources</h2>
+    <ul style="list-style:none; font-size:0.95rem; line-height:2.5;">
+      <li><a href="https://hsulab.com/intranet.html" target="_blank">Original Intranet Page (Weebly)</a></li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-nav">
+    <a href="index.html">Home</a><span>·</span><a href="research.html">Research</a><span>·</span>
+    <a href="people.html">People</a><span>·</span><a href="publications.html">Publications</a><span>·</span>
+    <a href="positions.html">Positions</a><span>·</span><a href="news.html">News</a><span>·</span>
+    <a href="photos.html">Photos</a><span>·</span><a href="links.html">Links</a>
+  </div>
+  <p class="footer-copy">© Copyright 2015 | Hsu Laboratories | Department of Chemistry | University of Texas at Austin<br>
+  100 E 24th St | Austin, Texas 78712 | <a href="mailto:ken.hsu@austin.utexas.edu">Contact Us</a></p>
+</footer>
+
+<script>
+  // Check on Enter key too
+  document.getElementById('pwd-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') checkPassword();
+  });
+
+  function checkPassword() {
+    const pwd = document.getElementById('pwd-input').value;
+    if (pwd === 'hsulab2024') {
+      document.getElementById('lock-screen').style.display = 'none';
+      document.getElementById('intranet-content').style.display = 'block';
+    } else {
+      document.getElementById('error-msg').style.display = 'block';
+      document.getElementById('pwd-input').value = '';
+    }
+  }
+</script>
+</body>
+</html>
