@@ -20,20 +20,28 @@
     .btn-primary { background:#1a1a1a; color:#fff; }
     .btn-primary:hover { background:#333; }
     .btn-secondary { background:#f0f0f0; color:#333; margin-left:8px; }
-    .btn-danger { background:#e53e3e; color:#fff; margin-left:8px; }
+    .btn-danger { background:#e53e3e; color:#fff; }
+    .btn-danger:hover { background:#c53030; }
     .status-msg { margin-top:12px; padding:10px 14px; border-radius:2px; font-size:0.82rem; display:none; }
     .status-success { background:#f0fff4; border:1px solid #68d391; color:#276749; }
     .status-error { background:#fff5f5; border:1px solid #fc8181; color:#c53030; }
     .preview-box { background:#f7f8fa; border:1px solid #e2e8f0; padding:16px; border-radius:2px; margin-top:12px; font-size:0.84rem; display:none; }
-    .tabs { display:flex; gap:0; margin-bottom:32px; border-bottom:2px solid #e2e8f0; }
+    .tabs { display:flex; gap:0; margin-bottom:32px; border-bottom:2px solid #e2e8f0; flex-wrap:wrap; }
     .tab { padding:10px 20px; font-size:0.72rem; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#888; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px; }
     .tab.active { color:#1a1a1a; border-bottom-color:#1a1a1a; }
     .tab-content { display:none; }
     .tab-content.active { display:block; }
     .hint { font-size:0.75rem; color:#888; margin-top:4px; }
     .info-box { background:#ebf8ff; border:1px solid #90cdf4; padding:12px 16px; border-radius:2px; font-size:0.82rem; color:#2c5282; margin-bottom:20px; }
-    .admin-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:32px; }
-    .admin-header span { font-size:0.75rem; color:#888; }
+    .admin-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:32px; gap:16px; }
+    .delete-list { list-style:none; padding:0; max-height:400px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:2px; }
+    .delete-list li { display:flex; justify-content:space-between; align-items:flex-start; padding:12px 16px; border-bottom:1px solid #f0f0f0; font-size:0.84rem; gap:12px; }
+    .delete-list li:last-child { border-bottom:none; }
+    .delete-list li .item-text { flex:1; line-height:1.5; }
+    .delete-list li .item-text strong { display:block; margin-bottom:2px; }
+    .btn-del { background:#fff0f0; color:#c53030; border:1px solid #fc8181; padding:4px 12px; font-size:0.7rem; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; cursor:pointer; border-radius:2px; white-space:nowrap; flex-shrink:0; }
+    .btn-del:hover { background:#e53e3e; color:#fff; }
+    .loading { color:#888; font-size:0.84rem; padding:16px; }
   </style>
 </head>
 <body>
@@ -63,32 +71,32 @@
   <p id="error-msg" style="color:#cc0000;font-size:0.8rem;display:none;">Incorrect password.</p>
 </div>
 
-<!-- Step 2: Token setup (first time only) -->
+<!-- Step 2: Token (first time only) -->
 <div id="token-screen">
   <p style="font-family:'Montserrat',sans-serif;font-size:0.8rem;letter-spacing:0.12em;text-transform:uppercase;color:#555;text-align:center;">One-Time Setup</p>
-  <p style="font-size:0.84rem;color:#555;text-align:center;line-height:1.6;">Enter the GitHub token provided by your lab administrator. This will be saved securely in your browser — you won't need to enter it again on this device.</p>
-  <div class="form-group">
-    <input type="password" id="token-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" style="font-family:monospace;width:340px;">
+  <p style="font-size:0.84rem;color:#555;text-align:center;line-height:1.6;max-width:400px;">Enter the GitHub token provided by your lab administrator. It will be saved securely in your browser — you won't need to enter it again on this device.</p>
+  <div class="form-group" style="max-width:360px;">
+    <input type="password" id="token-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" style="font-family:monospace;">
   </div>
   <button class="btn btn-primary" onclick="saveToken()">Save Token & Continue</button>
-  <p id="token-error" style="color:#cc0000;font-size:0.8rem;display:none;">Please enter a valid token.</p>
+  <p id="token-error" style="color:#cc0000;font-size:0.8rem;display:none;">Please enter a valid token (starts with gh).</p>
 </div>
 
 <!-- Admin Content -->
 <div id="admin-content">
   <div class="admin-header">
-    <div class="info-box" style="margin:0;flex:1;margin-right:16px;">✅ Logged in. Token loaded from browser storage.</div>
-    <button class="btn btn-danger" onclick="logout()" style="white-space:nowrap;">Log Out & Clear Token</button>
+    <div class="info-box" style="margin:0;flex:1;">✅ Logged in. Token loaded from browser storage.</div>
+    <button class="btn btn-danger" onclick="logout()">Log Out & Clear Token</button>
   </div>
 
-  <!-- Tabs -->
   <div class="tabs">
-    <div class="tab active" onclick="switchTab('news', event)">News</div>
-    <div class="tab" onclick="switchTab('people', event)">People</div>
-    <div class="tab" onclick="switchTab('publications', event)">Publications</div>
+    <div class="tab active" onclick="switchTab('news', event)">Add News</div>
+    <div class="tab" onclick="switchTab('people', event)">Add People</div>
+    <div class="tab" onclick="switchTab('publications', event)">Add Publication</div>
+    <div class="tab" onclick="switchTab('delete', event)">Delete</div>
   </div>
 
-  <!-- NEWS TAB -->
+  <!-- ADD NEWS TAB -->
   <div id="tab-news" class="tab-content active">
     <div class="admin-section">
       <h2>Add News Item</h2>
@@ -108,7 +116,7 @@
     </div>
   </div>
 
-  <!-- PEOPLE TAB -->
+  <!-- ADD PEOPLE TAB -->
   <div id="tab-people" class="tab-content">
     <div class="admin-section">
       <h2>Add Lab Member</h2>
@@ -151,7 +159,7 @@
         <input type="email" id="person-email" placeholder="name@utexas.edu">
       </div>
       <div class="form-group">
-        <label>Photo filename (upload to photos-files/ folder first)</label>
+        <label>Photo filename</label>
         <input type="text" id="person-photo" placeholder="photos-files/img-xxxx.jpg">
       </div>
       <button class="btn btn-primary" onclick="previewPerson()">Preview</button>
@@ -161,7 +169,7 @@
     </div>
   </div>
 
-  <!-- PUBLICATIONS TAB -->
+  <!-- ADD PUBLICATIONS TAB -->
   <div id="tab-publications" class="tab-content">
     <div class="admin-section">
       <h2>Add Publication</h2>
@@ -195,6 +203,31 @@
       <div id="pub-status" class="status-msg"></div>
     </div>
   </div>
+
+  <!-- DELETE TAB -->
+  <div id="tab-delete" class="tab-content">
+    <div class="admin-section">
+      <h2>Delete News Items</h2>
+      <p style="font-size:0.84rem;color:#666;margin-bottom:16px;">Click Delete next to any item to remove it.</p>
+      <div id="delete-news-list" class="delete-list"><p class="loading">Loading news...</p></div>
+      <div id="delete-news-status" class="status-msg"></div>
+    </div>
+
+    <div class="admin-section">
+      <h2>Delete Lab Members</h2>
+      <p style="font-size:0.84rem;color:#666;margin-bottom:16px;">Click Delete next to any person to remove them from the people page.</p>
+      <div id="delete-people-list" class="delete-list"><p class="loading">Loading people...</p></div>
+      <div id="delete-people-status" class="status-msg"></div>
+    </div>
+
+    <div class="admin-section">
+      <h2>Delete Publications</h2>
+      <p style="font-size:0.84rem;color:#666;margin-bottom:16px;">Click Delete next to any publication to remove it.</p>
+      <div id="delete-pub-list" class="delete-list"><p class="loading">Loading publications...</p></div>
+      <div id="delete-pub-status" class="status-msg"></div>
+    </div>
+  </div>
+
 </div>
 
 <footer>
@@ -213,98 +246,66 @@ const REPO = "kenhsu7337/hsulab";
 const HASH = "e81c3209e3618eded239767792800a07160ee8a614d332838236c53695f7566a";
 const TOKEN_KEY = "hsulab_admin_token";
 let sessionToken = null;
+let verifiedPassword = null;
 
-// ---- Crypto helpers ----
+// ---- Crypto ----
 async function deriveKey(password) {
   const enc = new TextEncoder();
-  const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
+  const km = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
   return crypto.subtle.deriveKey(
-    { name:'PBKDF2', salt: enc.encode('hsulab_salt_2024'), iterations:100000, hash:'SHA-256' },
-    keyMaterial, { name:'AES-GCM', length:256 }, false, ['encrypt','decrypt']
+    { name:'PBKDF2', salt:enc.encode('hsulab_salt_2024'), iterations:100000, hash:'SHA-256' },
+    km, { name:'AES-GCM', length:256 }, false, ['encrypt','decrypt']
   );
 }
-
-async function encryptToken(token, password) {
-  const key = await deriveKey(password);
+async function encryptToken(token, pwd) {
+  const key = await deriveKey(pwd);
   const iv = crypto.getRandomValues(new Uint8Array(12));
-  const enc = new TextEncoder();
-  const ciphertext = await crypto.subtle.encrypt({ name:'AES-GCM', iv }, key, enc.encode(token));
-  const combined = new Uint8Array(iv.byteLength + ciphertext.byteLength);
-  combined.set(iv, 0);
-  combined.set(new Uint8Array(ciphertext), iv.byteLength);
-  return btoa(String.fromCharCode(...combined));
+  const ct = await crypto.subtle.encrypt({name:'AES-GCM',iv}, key, new TextEncoder().encode(token));
+  const out = new Uint8Array(12 + ct.byteLength);
+  out.set(iv); out.set(new Uint8Array(ct), 12);
+  return btoa(String.fromCharCode(...out));
 }
-
-async function decryptToken(encrypted, password) {
-  const combined = Uint8Array.from(atob(encrypted), c => c.charCodeAt(0));
-  const iv = combined.slice(0, 12);
-  const ciphertext = combined.slice(12);
-  const key = await deriveKey(password);
-  const dec = await crypto.subtle.decrypt({ name:'AES-GCM', iv }, key, ciphertext);
+async function decryptToken(enc, pwd) {
+  const data = Uint8Array.from(atob(enc), c=>c.charCodeAt(0));
+  const key = await deriveKey(pwd);
+  const dec = await crypto.subtle.decrypt({name:'AES-GCM',iv:data.slice(0,12)}, key, data.slice(12));
   return new TextDecoder().decode(dec);
 }
 
-// ---- Auth flow ----
-document.getElementById('pwd-input').addEventListener('keydown', e => { if(e.key==='Enter') checkPassword(); });
-document.getElementById('token-input').addEventListener('keydown', e => { if(e.key==='Enter') saveToken(); });
-
-let verifiedPassword = null;
+// ---- Auth ----
+document.getElementById('pwd-input').addEventListener('keydown', e=>{ if(e.key==='Enter') checkPassword(); });
+document.getElementById('token-input').addEventListener('keydown', e=>{ if(e.key==='Enter') saveToken(); });
 
 async function checkPassword() {
   const pwd = document.getElementById('pwd-input').value;
-  const enc = new TextEncoder().encode(pwd);
-  const buf = await crypto.subtle.digest('SHA-256', enc);
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pwd));
   const hex = Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-  if(hex !== HASH) {
-    document.getElementById('error-msg').style.display='block';
-    document.getElementById('pwd-input').value='';
-    return;
-  }
+  if(hex !== HASH) { document.getElementById('error-msg').style.display='block'; document.getElementById('pwd-input').value=''; return; }
   verifiedPassword = pwd;
-  // Check if token already saved
   const saved = localStorage.getItem(TOKEN_KEY);
   if(saved) {
-    try {
-      sessionToken = await decryptToken(saved, pwd);
-      showAdmin();
-    } catch(e) {
-      // Decryption failed - ask for token again
-      showTokenScreen();
-    }
-  } else {
-    showTokenScreen();
-  }
+    try { sessionToken = await decryptToken(saved, pwd); showAdmin(); }
+    catch(e) { showTokenScreen(); }
+  } else { showTokenScreen(); }
 }
-
 function showTokenScreen() {
   document.getElementById('lock-screen').style.display='none';
   document.getElementById('token-screen').style.display='flex';
 }
-
 async function saveToken() {
   const token = document.getElementById('token-input').value.trim();
-  if(!token.startsWith('gh')) {
-    document.getElementById('token-error').style.display='block';
-    return;
-  }
-  const encrypted = await encryptToken(token, verifiedPassword);
-  localStorage.setItem(TOKEN_KEY, encrypted);
+  if(!token.startsWith('gh')) { document.getElementById('token-error').style.display='block'; return; }
+  localStorage.setItem(TOKEN_KEY, await encryptToken(token, verifiedPassword));
   sessionToken = token;
   showAdmin();
 }
-
 function showAdmin() {
   document.getElementById('lock-screen').style.display='none';
   document.getElementById('token-screen').style.display='none';
   document.getElementById('admin-content').style.display='block';
+  loadDeleteLists();
 }
-
-function logout() {
-  localStorage.removeItem(TOKEN_KEY);
-  sessionToken = null;
-  verifiedPassword = null;
-  location.reload();
-}
+function logout() { localStorage.removeItem(TOKEN_KEY); sessionToken=null; verifiedPassword=null; location.reload(); }
 
 // ---- Tabs ----
 function switchTab(name, e) {
@@ -317,166 +318,280 @@ function switchTab(name, e) {
 // ---- GitHub API ----
 async function getFile(path) {
   const r = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}`, {
-    headers: { Authorization: `token ${sessionToken}`, Accept: 'application/vnd.github.v3+json' }
+    headers:{ Authorization:`token ${sessionToken}`, Accept:'application/vnd.github.v3+json' }
   });
   if(!r.ok) throw new Error(`Failed to get ${path}: ${r.status}`);
   return r.json();
 }
-
 async function commitFile(path, content, message, sha) {
   const r = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}`, {
-    method: 'PUT',
-    headers: { Authorization: `token ${sessionToken}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message, content: btoa(unescape(encodeURIComponent(content))), sha })
+    method:'PUT',
+    headers:{ Authorization:`token ${sessionToken}`, Accept:'application/vnd.github.v3+json', 'Content-Type':'application/json' },
+    body:JSON.stringify({ message, content:btoa(unescape(encodeURIComponent(content))), sha })
   });
-  if(!r.ok) { const e = await r.json(); throw new Error(e.message); }
+  if(!r.ok) { const e=await r.json(); throw new Error(e.message); }
   return r.json();
 }
-
+function decode(b64) { return decodeURIComponent(escape(atob(b64.replace(/\n/g,'')))); }
 function showStatus(id, msg, isError=false) {
-  const el = document.getElementById(id);
-  el.textContent = msg;
-  el.className = `status-msg ${isError ? 'status-error' : 'status-success'}`;
-  el.style.display = 'block';
+  const el=document.getElementById(id);
+  el.textContent=msg;
+  el.className=`status-msg ${isError?'status-error':'status-success'}`;
+  el.style.display='block';
 }
 
-// ---- NEWS ----
+// ---- ADD NEWS ----
 function previewNews() {
-  const date = document.getElementById('news-date').value;
-  const text = document.getElementById('news-text').value.trim();
-  if(!date || !text) { alert('Please fill in date and text.'); return; }
-  const [yr, mo] = date.split('-');
-  const monthName = new Date(yr, mo-1).toLocaleString('en',{month:'long'}).toUpperCase();
-  document.getElementById('news-preview').innerHTML = `<strong>${monthName} ${yr}</strong><br>• ${text}`;
+  const date=document.getElementById('news-date').value;
+  const text=document.getElementById('news-text').value.trim();
+  if(!date||!text){alert('Please fill in date and text.');return;}
+  const [yr,mo]=date.split('-');
+  const m=new Date(yr,mo-1).toLocaleString('en',{month:'long'}).toUpperCase();
+  document.getElementById('news-preview').innerHTML=`<strong>${m} ${yr}</strong><br>• ${text}`;
   document.getElementById('news-preview').style.display='block';
 }
-
 async function submitNews() {
-  const date = document.getElementById('news-date').value;
-  const text = document.getElementById('news-text').value.trim();
-  if(!date || !text) { alert('Please fill in date and text.'); return; }
-  showStatus('news-status', 'Committing...', false);
+  const date=document.getElementById('news-date').value;
+  const text=document.getElementById('news-text').value.trim();
+  if(!date||!text){alert('Please fill in date and text.');return;}
+  showStatus('news-status','Committing...');
   try {
-    const file = await getFile('news-data.js');
-    const current = decodeURIComponent(escape(atob(file.content.replace(/\n/g,''))));
-    const newEntry = `  {\n    date: "${date}",\n    items: [\n      "${text.replace(/"/g,'\\"')}"\n    ]\n  },`;
-    const updated = current.replace('const HSU_LAB_NEWS = [', `const HSU_LAB_NEWS = [\n${newEntry}`);
+    const file=await getFile('news-data.js');
+    const current=decode(file.content);
+    const entry=`  {\n    date: "${date}",\n    items: [\n      "${text.replace(/"/g,'\\"')}"\n    ]\n  },`;
+    const updated=current.replace('const HSU_LAB_NEWS = [',`const HSU_LAB_NEWS = [\n${entry}`);
     await commitFile('news-data.js', updated, `Add news: ${date}`, file.sha);
-    showStatus('news-status', '✅ News item committed! Site will update in ~1 minute.');
+    showStatus('news-status','✅ News item committed! Site will update in ~1 minute.');
     document.getElementById('news-date').value='';
     document.getElementById('news-text').value='';
     document.getElementById('news-preview').style.display='none';
-  } catch(e) {
-    showStatus('news-status', `❌ Error: ${e.message}`, true);
-  }
+    setTimeout(loadDeleteLists, 3000);
+  } catch(e){ showStatus('news-status',`❌ Error: ${e.message}`,true); }
 }
 
-// ---- PEOPLE ----
+// ---- ADD PEOPLE ----
 function previewPerson() {
-  const name = document.getElementById('person-name').value;
-  const years = document.getElementById('person-years').value;
-  const hometown = document.getElementById('person-hometown').value;
-  const edu = document.getElementById('person-edu').value;
-  const hobbies = document.getElementById('person-hobbies').value;
-  const fave = document.getElementById('person-fave').value;
-  const email = document.getElementById('person-email').value;
-  const photo = document.getElementById('person-photo').value;
-  document.getElementById('person-preview').innerHTML = `
+  const name=document.getElementById('person-name').value;
+  const years=document.getElementById('person-years').value;
+  const hometown=document.getElementById('person-hometown').value;
+  const edu=document.getElementById('person-edu').value;
+  const hobbies=document.getElementById('person-hobbies').value;
+  const fave=document.getElementById('person-fave').value;
+  const email=document.getElementById('person-email').value;
+  const photo=document.getElementById('person-photo').value;
+  document.getElementById('person-preview').innerHTML=`
     <div style="display:flex;gap:16px;align-items:flex-start;">
-      ${photo ? `<img src="${photo}" style="width:80px;height:100px;object-fit:cover;">` : '<div style="width:80px;height:100px;background:#eee;"></div>'}
+      ${photo?`<img src="${photo}" style="width:80px;height:100px;object-fit:cover;">`:'<div style="width:80px;height:100px;background:#eee;"></div>'}
       <div><strong>${name} (${years})</strong><br>
-      ${hometown ? `Where are you from? ${hometown}<br>` : ''}
-      ${edu ? `<strong>Education:</strong><br>${edu.replace(/\n/g,'<br>')}<br>` : ''}
-      ${hobbies ? `Hobbies: ${hobbies}<br>` : ''}
-      ${fave ? `Favorite: ${fave}<br>` : ''}
-      ${email ? `<a href="mailto:${email}">${email}</a>` : ''}</div>
+      ${hometown?`Where are you from? ${hometown}<br>`:''}
+      ${edu?`<strong>Education:</strong><br>${edu.replace(/\n/g,'<br>')}<br>`:''}
+      ${hobbies?`Hobbies: ${hobbies}<br>`:''}
+      ${fave?`Favorite: ${fave}<br>`:''}
+      ${email?`<a href="mailto:${email}">${email}</a>`:''}</div>
     </div>`;
   document.getElementById('person-preview').style.display='block';
 }
-
 async function submitPerson() {
-  const name = document.getElementById('person-name').value.trim();
-  const role = document.getElementById('person-role').value;
-  const years = document.getElementById('person-years').value.trim();
-  const hometown = document.getElementById('person-hometown').value.trim();
-  const edu = document.getElementById('person-edu').value.trim();
-  const hobbies = document.getElementById('person-hobbies').value.trim();
-  const fave = document.getElementById('person-fave').value.trim();
-  const email = document.getElementById('person-email').value.trim();
-  const photo = document.getElementById('person-photo').value.trim();
-  if(!name) { alert('Please enter a name.'); return; }
-  showStatus('person-status', 'Committing...', false);
+  const name=document.getElementById('person-name').value.trim();
+  const role=document.getElementById('person-role').value;
+  const years=document.getElementById('person-years').value.trim();
+  const hometown=document.getElementById('person-hometown').value.trim();
+  const edu=document.getElementById('person-edu').value.trim();
+  const hobbies=document.getElementById('person-hobbies').value.trim();
+  const fave=document.getElementById('person-fave').value.trim();
+  const email=document.getElementById('person-email').value.trim();
+  const photo=document.getElementById('person-photo').value.trim();
+  if(!name){alert('Please enter a name.');return;}
+  showStatus('person-status','Committing...');
   try {
-    const file = await getFile('people.html');
-    let html = decodeURIComponent(escape(atob(file.content.replace(/\n/g,''))));
-    const eduLines = edu.split('\n').join('<br>\n        ');
-    const newBlock = `\n    <div class="person-row">
-      ${photo ? `<img src="${photo}" alt="${name}" onerror="this.style.display='none'">` : '<div class="person-photo-placeholder"></div>'}
+    const file=await getFile('people.html');
+    let html=decode(file.content);
+    const eduLines=edu.split('\n').join('<br>\n        ');
+    const block=`\n    <div class="person-row">
+      ${photo?`<img src="${photo}" alt="${name}" onerror="this.style.display='none'">`:'<div class="person-photo-placeholder"></div>'}
       <div class="person-info">
         <h4>${name} (${years})</h4>
-        ${hometown ? `<p>Where are you from? ${hometown}</p>` : ''}
-        ${edu ? `<p><strong>Education:</strong><br>\n        ${eduLines}</p>` : ''}
-        ${hobbies ? `<p>Hobbies: ${hobbies}</p>` : ''}
-        ${fave ? `<p>Favorite organism or molecule: ${fave}</p>` : ''}
-        ${email ? `<p><a href="mailto:${email}">${email}</a></p>` : ''}
+        ${hometown?`<p>Where are you from? ${hometown}</p>`:''}
+        ${edu?`<p><strong>Education:</strong><br>\n        ${eduLines}</p>`:''}
+        ${hobbies?`<p>Hobbies: ${hobbies}</p>`:''}
+        ${fave?`<p>Favorite organism or molecule: ${fave}</p>`:''}
+        ${email?`<p><a href="mailto:${email}">${email}</a></p>`:''}
       </div>
     </div>`;
-    const markerMap = {
-      'Graduate Student': '<!-- END GRAD STUDENTS -->',
-      'Postdoctoral Fellow': '<!-- END POSTDOCS -->',
-      'Research Scientist': '<!-- END RESEARCH SCIENTISTS -->',
-      'Lab Manager': '<!-- END LAB MANAGER -->',
-      'Undergraduate Researcher': '<!-- END UNDERGRADS -->'
-    };
-    const marker = markerMap[role];
-    html = marker && html.includes(marker)
-      ? html.replace(marker, newBlock + '\n    ' + marker)
-      : html.replace('</main>', newBlock + '\n</main>');
-    await commitFile('people.html', html, `Add lab member: ${name}`, file.sha);
-    showStatus('person-status', `✅ ${name} added! Site will update in ~1 minute.`);
-  } catch(e) {
-    showStatus('person-status', `❌ Error: ${e.message}`, true);
-  }
+    const markers={'Graduate Student':'<!-- END GRAD STUDENTS -->','Postdoctoral Fellow':'<!-- END POSTDOCS -->','Research Scientist':'<!-- END RESEARCH SCIENTISTS -->','Lab Manager':'<!-- END LAB MANAGER -->','Undergraduate Researcher':'<!-- END UNDERGRADS -->'};
+    const marker=markers[role];
+    html=marker&&html.includes(marker)?html.replace(marker,block+'\n    '+marker):html.replace('</main>',block+'\n</main>');
+    await commitFile('people.html',html,`Add lab member: ${name}`,file.sha);
+    showStatus('person-status',`✅ ${name} added! Site will update in ~1 minute.`);
+    setTimeout(loadDeleteLists,3000);
+  } catch(e){ showStatus('person-status',`❌ Error: ${e.message}`,true); }
 }
 
-// ---- PUBLICATIONS ----
+// ---- ADD PUBLICATIONS ----
 function previewPub() {
-  const num = document.getElementById('pub-number').value;
-  const authors = document.getElementById('pub-authors').value.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
-  const title = document.getElementById('pub-title').value;
-  const journal = document.getElementById('pub-journal').value;
-  const url = document.getElementById('pub-url').value;
-  const notes = document.getElementById('pub-notes').value;
-  document.getElementById('pub-preview').innerHTML = `
+  const num=document.getElementById('pub-number').value;
+  const authors=document.getElementById('pub-authors').value.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
+  const title=document.getElementById('pub-title').value;
+  const journal=document.getElementById('pub-journal').value;
+  const url=document.getElementById('pub-url').value;
+  const notes=document.getElementById('pub-notes').value;
+  document.getElementById('pub-preview').innerHTML=`
     <div style="display:flex;gap:12px;">
       <span style="color:#aaa;font-weight:700;min-width:28px;">${num}.</span>
       <span>${authors} <a href="${url}" target="_blank">${title}</a> <em>${journal}</em> ${notes}</span>
     </div>`;
   document.getElementById('pub-preview').style.display='block';
 }
-
 async function submitPub() {
-  const num = document.getElementById('pub-number').value;
-  const authors = document.getElementById('pub-authors').value.trim().replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
-  const title = document.getElementById('pub-title').value.trim();
-  const journal = document.getElementById('pub-journal').value.trim();
-  const url = document.getElementById('pub-url').value.trim();
-  const notes = document.getElementById('pub-notes').value.trim();
-  if(!num || !title) { alert('Please fill in number and title.'); return; }
-  showStatus('pub-status', 'Committing...', false);
+  const num=document.getElementById('pub-number').value;
+  const authors=document.getElementById('pub-authors').value.trim().replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
+  const title=document.getElementById('pub-title').value.trim();
+  const journal=document.getElementById('pub-journal').value.trim();
+  const url=document.getElementById('pub-url').value.trim();
+  const notes=document.getElementById('pub-notes').value.trim();
+  if(!num||!title){alert('Please fill in number and title.');return;}
+  showStatus('pub-status','Committing...');
   try {
-    const file = await getFile('publications.html');
-    let html = decodeURIComponent(escape(atob(file.content.replace(/\n/g,''))));
-    const newEntry = `\n    <div class="pub-entry">
+    const file=await getFile('publications.html');
+    let html=decode(file.content);
+    const entry=`\n    <div class="pub-entry">
       <div class="pub-number">${num}.</div>
-      <div class="pub-content">${authors} <a href="${url}" target="_blank">${title}</a> <em>${journal}</em>${notes ? ' '+notes : ''}</div>
+      <div class="pub-content">${authors} <a href="${url}" target="_blank">${title}</a> <em>${journal}</em>${notes?' '+notes:''}</div>
     </div>`;
-    html = html.replace('<h2>Journal Articles</h2>', '<h2>Journal Articles</h2>\n' + newEntry);
-    await commitFile('publications.html', html, `Add publication #${num}`, file.sha);
-    showStatus('pub-status', `✅ Publication #${num} added! Site will update in ~1 minute.`);
-  } catch(e) {
-    showStatus('pub-status', `❌ Error: ${e.message}`, true);
-  }
+    html=html.replace('<h2>Journal Articles</h2>','<h2>Journal Articles</h2>\n'+entry);
+    await commitFile('publications.html',html,`Add publication #${num}`,file.sha);
+    showStatus('pub-status',`✅ Publication #${num} added! Site will update in ~1 minute.`);
+    setTimeout(loadDeleteLists,3000);
+  } catch(e){ showStatus('pub-status',`❌ Error: ${e.message}`,true); }
+}
+
+// ---- DELETE LISTS ----
+async function loadDeleteLists() {
+  loadNewsDeleteList();
+  loadPeopleDeleteList();
+  loadPubDeleteList();
+}
+
+async function loadNewsDeleteList() {
+  const el=document.getElementById('delete-news-list');
+  el.innerHTML='<p class="loading">Loading...</p>';
+  try {
+    const file=await getFile('news-data.js');
+    const js=decode(file.content);
+    // Parse news items from JS
+    const months=[];
+    const regex=/\{\s*date:\s*"([^"]+)",\s*items:\s*\[([\s\S]*?)\]\s*\}/g;
+    let m;
+    while((m=regex.exec(js))!==null){
+      const date=m[1];
+      const itemsStr=m[2];
+      const items=[];
+      const itemRegex=/"((?:[^"\\]|\\.)*)"/g;
+      let im;
+      while((im=itemRegex.exec(itemsStr))!==null){
+        items.push(im[1]);
+      }
+      months.push({date,items});
+    }
+    if(!months.length){el.innerHTML='<p class="loading">No news items found.</p>';return;}
+    const monthNames=['January','February','March','April','May','June','July','August','September','October','November','December'];
+    let html='';
+    months.forEach((group,gi)=>{
+      const [yr,mo]=group.date.split('-');
+      const label=monthNames[parseInt(mo)-1]+' '+yr;
+      group.items.forEach((item,ii)=>{
+        const clean=item.replace(/<[^>]+>/g,'').substring(0,80);
+        html+=`<li><div class="item-text"><strong>${label}</strong>${clean}${item.length>80?'...':''}</div>
+          <button class="btn-del" onclick="deleteNewsItem(${gi},${ii})">Delete</button></li>`;
+      });
+    });
+    el.innerHTML=html;
+    el._data={js,months,sha:file.sha};
+  } catch(e){ el.innerHTML=`<p class="loading" style="color:red;">Error: ${e.message}</p>`; }
+}
+
+async function deleteNewsItem(groupIdx, itemIdx) {
+  if(!confirm('Delete this news item?')) return;
+  const el=document.getElementById('delete-news-list');
+  const {js,months,sha}=el._data;
+  months[groupIdx].items.splice(itemIdx,1);
+  // Remove group if empty
+  const filtered=months.filter(g=>g.items.length>0);
+  // Rebuild JS
+  const entries=filtered.map(g=>`  {\n    date: "${g.date}",\n    items: [\n${g.items.map(i=>`      "${i.replace(/"/g,'\\"')}"`).join(',\n')}\n    ]\n  }`).join(',\n');
+  const updated=`// HSU LAB NEWS DATA\n// This file is auto-updated by the admin panel.\n// Do not edit manually.\n\nconst HSU_LAB_NEWS = [\n${entries}\n];\n`;
+  showStatus('delete-news-status','Deleting...');
+  try {
+    await commitFile('news-data.js',updated,'Delete news item',sha);
+    showStatus('delete-news-status','✅ Deleted! Site will update in ~1 minute.');
+    setTimeout(loadNewsDeleteList,2000);
+  } catch(e){ showStatus('delete-news-status',`❌ Error: ${e.message}`,true); }
+}
+
+async function loadPeopleDeleteList() {
+  const el=document.getElementById('delete-people-list');
+  el.innerHTML='<p class="loading">Loading...</p>';
+  try {
+    const file=await getFile('people.html');
+    const html=decode(file.content);
+    const regex=/<h4>([^<]+)<\/h4>/g;
+    let m; const people=[];
+    while((m=regex.exec(html))!==null){ people.push(m[1]); }
+    if(!people.length){el.innerHTML='<p class="loading">No people found.</p>';return;}
+    el.innerHTML=people.map((p,i)=>`<li><div class="item-text">${p}</div>
+      <button class="btn-del" onclick="deletePerson('${p.replace(/'/g,"\\'")}')">Delete</button></li>`).join('');
+    el._data={html,sha:file.sha};
+  } catch(e){ el.innerHTML=`<p class="loading" style="color:red;">Error: ${e.message}</p>`; }
+}
+
+async function deletePerson(name) {
+  if(!confirm(`Delete ${name} from the people page?`)) return;
+  const el=document.getElementById('delete-people-list');
+  let {html,sha}=el._data;
+  // Remove the entire person-row div containing this h4
+  const escaped=name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  const regex=new RegExp(`\\s*<div class="person-row">[\\s\\S]*?<h4>${escaped}<\\/h4>[\\s\\S]*?<\\/div>\\s*<\\/div>`,'m');
+  html=html.replace(regex,'');
+  showStatus('delete-people-status','Deleting...');
+  try {
+    await commitFile('people.html',html,`Remove lab member: ${name}`,sha);
+    showStatus('delete-people-status',`✅ ${name} removed! Site will update in ~1 minute.`);
+    setTimeout(loadPeopleDeleteList,2000);
+  } catch(e){ showStatus('delete-people-status',`❌ Error: ${e.message}`,true); }
+}
+
+async function loadPubDeleteList() {
+  const el=document.getElementById('delete-pub-list');
+  el.innerHTML='<p class="loading">Loading...</p>';
+  try {
+    const file=await getFile('publications.html');
+    const html=decode(file.content);
+    const regex=/<div class="pub-number">(\d+)\.<\/div>\s*<div class="pub-content">([\s\S]*?)<\/div>\s*<\/div>/g;
+    let m; const pubs=[];
+    while((m=regex.exec(html))!==null){
+      const num=m[1];
+      const content=m[2].replace(/<[^>]+>/g,'').substring(0,80);
+      pubs.push({num,content,full:m[0]});
+    }
+    if(!pubs.length){el.innerHTML='<p class="loading">No publications found.</p>';return;}
+    el.innerHTML=pubs.map(p=>`<li><div class="item-text"><strong>#${p.num}</strong> ${p.content}...</div>
+      <button class="btn-del" onclick="deletePub('${p.num}')">Delete</button></li>`).join('');
+    el._data={html,sha:file.sha,pubs};
+  } catch(e){ el.innerHTML=`<p class="loading" style="color:red;">Error: ${e.message}</p>`; }
+}
+
+async function deletePub(num) {
+  if(!confirm(`Delete publication #${num}?`)) return;
+  const el=document.getElementById('delete-pub-list');
+  let {html,sha}=el._data;
+  const regex=new RegExp(`\\s*<div class="pub-entry">\\s*<div class="pub-number">${num}\\.<\\/div>[\\s\\S]*?<\\/div>\\s*<\\/div>`,'m');
+  html=html.replace(regex,'');
+  showStatus('delete-pub-status','Deleting...');
+  try {
+    await commitFile('publications.html',html,`Remove publication #${num}`,sha);
+    showStatus('delete-pub-status',`✅ Publication #${num} removed! Site will update in ~1 minute.`);
+    setTimeout(loadPubDeleteList,2000);
+  } catch(e){ showStatus('delete-pub-status',`❌ Error: ${e.message}`,true); }
 }
 </script>
 </body>
