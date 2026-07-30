@@ -4,12 +4,6 @@
 
 const HSU_LAB_NEWS = [
   {
-    date: "2026-07",
-    items: [
-      "this is a test"
-    ]
-  },
-  {
     date: "2026-05",
     items: [
       "Congrats to Surya for receiving the Summer 2026 Chemistry Department Research Fellowship!",
