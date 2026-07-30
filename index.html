@@ -6,6 +6,41 @@
   <title>HSU LAB - HOME</title>
   <meta name="description" content="Hsu Lab - Chemical Biology, Metabolomics, Lipidomics at UT Austin">
   <link rel="stylesheet" href="style.css">
+<style>
+.home-hero {
+  position: relative;
+  background-image: url('https://hsulab.com/uploads/3/5/4/2/35421769/published/ptyr-phosphoproteomicapproaches-2.jpg');
+  background-size: cover;
+  background-position: center;
+  min-height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.home-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.72);
+}
+.hero-tagline {
+  position: relative;
+  font-family: 'Crimson Text', serif;
+  font-size: 1.6rem;
+  font-style: italic;
+  color: #8b0000;
+  font-weight: 600;
+  max-width: 720px;
+  padding: 0 24px;
+  line-height: 1.6;
+  animation: fadeIn 1.8s ease forwards;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+</style>
 </head>
 <body>
 
@@ -26,8 +61,8 @@
   </div>
 </header>
 
-<div class="home-tagline">
-  <p><em>Applying chemistry principles towards the study and manipulation of biological systems</em></p>
+<div class="home-hero">
+  <p class="hero-tagline"><em>Applying chemistry principles towards the study and manipulation of biological systems</em></p>
 </div>
 
 <main>
