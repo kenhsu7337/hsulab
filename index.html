@@ -12,7 +12,7 @@
   background-image: url('Wallpaper2018.jpg');
   background-size: cover;
   background-position: center;
-  min-height: 200px;
+  min-height: 260px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -23,21 +23,22 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(255,255,255,0.75);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background: rgba(255,255,255,0.80);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 .hero-tagline {
   position: relative;
   font-family: 'Crimson Text', serif;
-  font-size: 1.55rem;
+  font-size: 1.65rem;
   font-style: italic;
   font-weight: 600;
   color: #6b0000;
   max-width: 680px;
-  padding: 32px 32px;
+  padding: 0 32px;
   line-height: 1.55;
-  animation: fadeIn 2s ease forwards;
+  opacity: 0;
+  animation: fadeIn 2.2s ease 0.3s forwards;
 }
 @keyframes fadeIn {
   from { opacity: 0; }
