@@ -486,9 +486,9 @@ async function submitPub() {
 async function lookupDOI() {
   let doi = document.getElementById('doi-lookup').value.trim();
   if(!doi) { alert('Please enter a DOI.'); return; }
-  // Clean up DOI - remove https://doi.org/ prefix if present
-  doi = doi.replace(/^https?:\/\/(dx\.)?doi\.org\//, '');
-  
+  // Clean up DOI
+  doi = doi.replace(/^https?:\/\/(dx\.)?doi\.org\//, '').trim();
+
   showStatus('doi-status', 'Looking up DOI...', false);
   document.getElementById('doi-btn').textContent = 'Loading...';
   document.getElementById('doi-btn').disabled = true;
@@ -499,13 +499,21 @@ async function lookupDOI() {
     const data = await r.json();
     const work = data.message;
 
-    // Format authors: Last FI format, bold Hsu KL
+    // Format authors: Last FI, bold all Hsu K* variants
+    const isHsuKL = (last, given) => {
+      if(!last || last.toLowerCase() !== 'hsu') return false;
+      if(!given) return false;
+      const g = given.trim().toLowerCase();
+      // Match: Ku-Lung, K, KL, K-L, Ku Lung, etc.
+      return g.startsWith('k') || g === 'kl' || g.startsWith('ku');
+    };
+
     const authors = (work.author || []).map(a => {
       const last = a.family || '';
-      const first = a.given ? a.given.split(' ').map(n=>n[0]).join('') : '';
-      const name = `${last} ${first}`.trim();
-      // Auto-bold Hsu KL variants
-      if(last.toLowerCase() === 'hsu' && (first.startsWith('K') || first === 'KL')) return `**${name}**`;
+      const given = a.given || '';
+      const initials = given.split(/[\s-]+/).map(n => n[0]).join('').toUpperCase();
+      const name = `${last} ${initials}`.trim();
+      if(isHsuKL(last, given)) return `**${name}**`;
       return name;
     }).join(', ') + '.';
 
@@ -513,23 +521,37 @@ async function lookupDOI() {
     const title = (work.title || [''])[0];
 
     // Journal
-    const journal = (work['container-title'] || [''])[0];
-    const year = work.published?.['date-parts']?.[0]?.[0] || '';
+    const journal = (work['container-title'] || (work['institution'] ? [work['institution'][0]?.name] : ['']))[0] || '';
+    const year = work.published?.['date-parts']?.[0]?.[0] || work['published-print']?.['date-parts']?.[0]?.[0] || '';
     const volume = work.volume || '';
     const issue = work.issue ? `(${work.issue})` : '';
     const pages = work.page || '';
-    const journalStr = `${journal}. ${year}${volume ? '; ' + volume + issue : ''}${pages ? ': ' + pages : ''}.`.replace(/\.\s*\./g, '.').trim();
+    let journalStr = journal;
+    if(year) journalStr += `. ${year}`;
+    if(volume) journalStr += `; ${volume}${issue}`;
+    if(pages) journalStr += `: ${pages}`;
+    journalStr = journalStr.replace(/\.{2,}/g, '.').trim() + '.';
 
     // URL
     const url = `https://doi.org/${doi}`;
 
+    // Auto-fill next pub number from publications page
+    let nextNum = '';
+    try {
+      const pubFile = await getFile('publications.html');
+      const pubHtml = decode(pubFile.content);
+      const nums = [...pubHtml.matchAll(/<div class="pub-number">(\d+)\.<\/div>/g)].map(m => parseInt(m[1]));
+      if(nums.length) nextNum = Math.max(...nums) + 1;
+    } catch(e) { /* ignore */ }
+
     // Fill in the form
+    if(nextNum) document.getElementById('pub-number').value = nextNum;
     document.getElementById('pub-authors').value = authors;
     document.getElementById('pub-title').value = title;
     document.getElementById('pub-journal').value = journalStr;
     document.getElementById('pub-url').value = url;
 
-    showStatus('doi-status', '✅ Fields filled! Review, adjust **Hsu KL** bolding if needed, then Preview and Commit.', false);
+    showStatus('doi-status', `✅ Fields filled! Publication #${nextNum || '?'} pre-filled. Review authors and click Preview.`, false);
   } catch(e) {
     showStatus('doi-status', `❌ ${e.message}`, true);
   } finally {
