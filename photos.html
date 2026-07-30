@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PHOTOS - HSU LAB</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .photos-section { max-width: 960px; margin: 0 auto; padding: 40px 20px 60px; }
+    .photo-group { margin-bottom: 48px; }
+    .photo-group h2 { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: #555; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 20px; }
+    .photo-group p { font-size: 0.84rem; color: #666; margin-bottom: 16px; font-style: italic; }
+    .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+    .photo-grid img { width: 100%; height: 170px; object-fit: cover; display: block; cursor: pointer; transition: opacity 0.2s; }
+    .photo-grid img:hover { opacity: 0.85; }
+    #lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 1000; align-items: center; justify-content: center; }
+    #lightbox.active { display: flex; }
+    #lightbox img { max-width: 90vw; max-height: 90vh; object-fit: contain; }
+    #lightbox-close { position: absolute; top: 20px; right: 30px; color: #fff; font-size: 2rem; cursor: pointer; }
+    #lightbox-prev, #lightbox-next { position: absolute; top: 50%; transform: translateY(-50%); color: #fff; font-size: 2.5rem; cursor: pointer; padding: 10px; user-select: none; }
+    #lightbox-prev { left: 20px; }
+    #lightbox-next { right: 20px; }
+  </style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <a class="site-logo" href="index.html">HSU LAB</a>
+    <nav><ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="research.html">Research</a></li>
+      <li><a href="people.html">People</a></li>
+      <li><a href="publications.html">Publications</a></li>
+      <li><a href="positions.html">Positions</a></li>
+      <li><a href="news.html">News</a></li>
+      <li><a href="links.html">Links</a></li>
+    </ul></nav>
+  </div>
+</header>
+
+<div class="page-hero"><h1>Photos</h1></div>
+
+<div id="lightbox">
+  <span id="lightbox-close" onclick="closeLightbox()">✕</span>
+  <span id="lightbox-prev" onclick="changePhoto(-1)">&#8249;</span>
+  <img id="lightbox-img" src="" alt="">
+  <span id="lightbox-next" onclick="changePhoto(1)">&#8250;</span>
+</div>
+
+<main>
+  <div class="photos-section">
+
+    <div class="photo-group">
+      <h2>UT Austin STEM Girl Day 2026</h2>
+      <div class="photo-grid">
+        <img src="photos-files/img-9395.png" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-9391.png" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-9390.png" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-9392.png" alt="" onclick="openLightbox(this)">
+      </div>
+    </div>
+
+    <div class="photo-group">
+      <h2>Dr. David Leace's Graduation and Hsu Lab Holiday Party 2025</h2>
+      <div class="photo-grid">
+        <img src="photos-files/img-4135.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-4138.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-4142.jpg" alt="" onclick="openLightbox(this)">
+      </div>
+    </div>
+
+    <div class="photo-group">
+      <h2>Dr. Michael Founds's Graduation Party 2025</h2>
+      <div class="photo-grid">
+        <img src="photos-files/img-3532.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-3537.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-3535.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-3542.jpg" alt="" onclick="openLightbox(this)">
+      </div>
+    </div>
+
+    <div class="photo-group">
+      <h2>Enzyme in Action Activity at STEM Girl Day 2025</h2>
+      <div class="photo-grid">
+        <img src="photos-files/54348997926-0327f4a6fb-k.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/54348998071-cf72f723ef-k.jpg" alt="" onclick="openLightbox(this)">
+      </div>
+    </div>
+
+    <div class="photo-group">
+      <h2>Watching the 2024 Solar Eclipse in Austin</h2>
+      <div class="photo-grid">
+        <img src="photos-files/img-8168.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-8175.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/screenshot-2024-07-07-at-3-36-24-pm.png" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-9645.jpg" alt="" onclick="openLightbox(this)">
+      </div>
+    </div>
+
+    <div class="photo-group">
+      <h2>Celebrating New NIH Funding 2023</h2>
+      <div class="photo-grid">
+        <img src="photos-files/41428.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/41420.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/41424.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/41425.jpeg" alt="" onclick="openLightbox(this)">
+      </div>
+    </div>
+
+    <div class="photo-group">
+      <h2>Dr. Kun Yuan's Graduation Party 2022</h2>
+      <div class="photo-grid">
+        <img src="photos-files/20221117-163452.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20221117-163054.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20221117-163043.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20221117-162924.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20221117-163308.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20221117-162936.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20221117-163504.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20221117-164332.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20221117-163741.jpg" alt="" onclick="openLightbox(this)">
+      </div>
+    </div>
+
+    <div class="photo-group">
+      <h2>Dr. Anthony Ciancone's Graduation Party 2022</h2>
+      <div class="photo-grid">
+        <img src="photos-files/20221014-182323.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20221014-182414.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20221014-182420.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20221014-182535.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20221014-182538.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20221014-182543.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20221014-182546.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20221014-183011.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20221014-183215.jpg" alt="" onclick="openLightbox(this)">
+      </div>
+    </div>
+
+    <div class="photo-group">
+      <h2>Dr. Rob Mendez's Graduation Party 2022</h2>
+      <div class="photo-grid">
+        <img src="photos-files/20220726-174958.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20220726-174455.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20220726-173619.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20220726-173751.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20220726-173712.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20220726-173430.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20220726-173424.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20220726-173418.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20220726-173415.jpg" alt="" onclick="openLightbox(this)">
+      </div>
+    </div>
+
+    <div class="photo-group">
+      <h2>Closing Out 2021 with New NIH Funding</h2>
+      <div class="photo-grid">
+        <img src="photos-files/20211216-170320_2.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20211216-170325_2.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20211216-170545_2.jpg" alt="" onclick="openLightbox(this)">
+      </div>
+    </div>
+
+    <div class="photo-group">
+      <h2>Dr. Adam Borne's Graduation Party 2021</h2>
+      <div class="photo-grid">
+        <img src="photos-files/20210623-171843.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20210623-171850.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20210623-172933.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20210623-173130.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20210623-173414.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20210623-173837.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20210623-173838.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20210623-180505.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20210623-180517.jpg" alt="" onclick="openLightbox(this)">
+      </div>
+    </div>
+
+    <div class="photo-group">
+      <h2>Dr. Tim Ware's Graduation Party 2021</h2>
+      <div class="photo-grid">
+        <img src="photos-files/20210612-115916.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20210612-124127.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20210612-124451.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20210612-132125.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20210612-132131.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20210612-132137.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20210612-132139.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20210612-140940-2.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20210612-140954-2.jpg" alt="" onclick="openLightbox(this)">
+      </div>
+    </div>
+
+    <div class="photo-group">
+      <h2>Christmas 2019</h2>
+      <div class="photo-grid">
+        <img src="photos-files/hsulab2019christmas-2.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/hsulab2019christmas-4.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-0113.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-0118.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-0139.jpg" alt="" onclick="openLightbox(this)">
+      </div>
+    </div>
+
+    <div class="photo-group">
+      <h2>UVA Graduation 2019 — Drs. Franks and Shin</h2>
+      <p>2 remarkable achievements for the Hsu Lab: Congratulations Dr. Franks and Dr. Shin! I am so proud of all their hard work and accomplishments.</p>
+      <div class="photo-grid">
+        <img src="photos-files/20170905-150904.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-4173.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-4154.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-4155.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-4156.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-4163.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-4164.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-4166.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-4167.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-4169.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-4170.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-4171.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-4158.jpg" alt="" onclick="openLightbox(this)">
+      </div>
+    </div>
+
+    <div class="photo-group">
+      <h2>Caroline's Defense Party — April 2019</h2>
+      <p>Successful back to back defenses for the Hsu Lab. Great job Caroline. We are very proud!</p>
+      <div class="photo-grid">
+        <img src="photos-files/20191215-110822.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20191215-110946.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20191215-111011.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20191215-111054.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20191215-111118.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20191215-111306.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20191215-111325.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20191215-111421.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/20191215-111645.jpg" alt="" onclick="openLightbox(this)">
+      </div>
+    </div>
+
+    <div class="photo-group">
+      <h2>Christmas 2018</h2>
+      <div class="photo-grid">
+        <img src="photos-files/img-1084.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1086.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1092.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1093.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1094.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1095.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1096.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1097.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1100.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1101.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1102.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1103.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1104.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1106.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1109.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1110.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1112.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1113.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1114.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1115.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1116.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1117.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1119.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1120.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1125.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1126.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1127.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1128.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1130.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1132.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1133.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1134.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1135.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1137.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1138.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1140.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1141.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1151.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1153.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1157.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1158.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1159.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1160.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1161.jpeg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1163.jpeg" alt="" onclick="openLightbox(this)">
+      </div>
+    </div>
+
+    <div class="photo-group">
+      <h2>Christmas 2017</h2>
+      <div class="photo-grid">
+        <img src="photos-files/1845929.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/2580670.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/56518.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/5463228.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/7909597.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/9820963.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/4492094.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/2414148.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/7928286.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/4568778.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/6709897.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/7745818.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/6192228.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/9666557.jpg" alt="" onclick="openLightbox(this)">
+      </div>
+    </div>
+
+    <div class="photo-group">
+      <h2>Lab Celebration for Grants + Papers 2017</h2>
+      <div class="photo-grid">
+        <img src="photos-files/1814032.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/2360085.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/8795146.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/6819917.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/4525236.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/631363.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/6153295.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/9377122.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/5295597.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/1363220.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/9154887.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/7625341.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/2767087.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/8581918.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/940703.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/4979651.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/1398095.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/818452.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/2756983.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/8805947.jpg" alt="" onclick="openLightbox(this)">
+      </div>
+    </div>
+
+    <div class="photo-group">
+      <h2>Christmas 2016</h2>
+      <div class="photo-grid">
+        <img src="photos-files/3602883.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/9386110.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/2950176.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/9071975.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/8990455.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/6587649.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/69391.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/9141653.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/4611179.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/474296.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/5007895.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/742560.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/6053122.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/5627636.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/7413917.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/4923277.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/9016723.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/4881286.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/9760056.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/2423130.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/7859559.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/8744453.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/1924978.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/7633657.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/4426954.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/8285001.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/7494853.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/234224.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/4059128.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/7009687.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/9953345.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/2657906.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/2622884.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/8524396.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/5273519.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/9421160.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/6541718.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/6692565.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/9295929.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/5900124.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/3727787.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/1190891.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/4437714.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/811713.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/8394513.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/8635169.jpg" alt="" onclick="openLightbox(this)">
+      </div>
+    </div>
+
+    <div class="photo-group">
+      <h2>Summer BBQ 2015</h2>
+      <div class="photo-grid">
+        <img src="photos-files/img-1700.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-1729.jpg" alt="" onclick="openLightbox(this)">
+        <img src="photos-files/img-4548.jpg" alt="" onclick="openLightbox(this)">
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  <div class="footer-nav">
+    <a href="index.html">Home</a><span>·</span><a href="research.html">Research</a><span>·</span>
+    <a href="people.html">People</a><span>·</span><a href="publications.html">Publications</a><span>·</span>
+    <a href="positions.html">Positions</a><span>·</span><a href="news.html">News</a><span>·</span>
+    <a href="photos.html">Photos</a><span>·</span><a href="links.html">Links</a>
+  </div>
+  <p class="footer-copy">© Copyright 2015 | Hsu Laboratories | Department of Chemistry | University of Texas at Austin<br>
+  100 E 24th St | Austin, Texas 78712 | <a href="mailto:ken.hsu@austin.utexas.edu">Contact Us</a></p>
+</footer>
+
+<script>
+  let currentImgs = [];
+  let currentIdx = 0;
+
+  function openLightbox(img) {
+    currentImgs = Array.from(img.closest('.photo-grid').querySelectorAll('img'));
+    currentIdx = currentImgs.indexOf(img);
+    document.getElementById('lightbox-img').src = img.src;
+    document.getElementById('lightbox').classList.add('active');
+  }
+
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('active');
+  }
+
+  function changePhoto(dir) {
+    currentIdx = (currentIdx + dir + currentImgs.length) % currentImgs.length;
+    document.getElementById('lightbox-img').src = currentImgs[currentIdx].src;
+  }
+
+  document.getElementById('lightbox').addEventListener('click', function(e) {
+    if (e.target === this) closeLightbox();
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowRight') changePhoto(1);
+    if (e.key === 'ArrowLeft') changePhoto(-1);
+  });
+</script>
+</body>
+</html>
