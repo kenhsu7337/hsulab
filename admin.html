@@ -7,10 +7,11 @@
   <link rel="stylesheet" href="style.css">
   <style>
     #lock-screen { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:70vh; gap:16px; }
+    #token-screen { display:none; flex-direction:column; align-items:center; justify-content:center; min-height:70vh; gap:16px; max-width:480px; margin:0 auto; padding:40px 20px; }
     #admin-content { display:none; max-width:860px; margin:0 auto; padding:40px 20px 80px; }
     .admin-section { margin-bottom:48px; }
     .admin-section h2 { font-size:0.72rem; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:#888; border-bottom:2px solid #e2e8f0; padding-bottom:10px; margin-bottom:24px; }
-    .form-group { margin-bottom:16px; }
+    .form-group { margin-bottom:16px; width:100%; }
     .form-group label { display:block; font-size:0.75rem; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:#555; margin-bottom:6px; }
     .form-group input, .form-group textarea, .form-group select { width:100%; padding:10px 12px; font-size:0.88rem; font-family:'Montserrat',sans-serif; border:1px solid #ddd; border-radius:2px; outline:none; }
     .form-group input:focus, .form-group textarea:focus { border-color:#2b6cb0; }
@@ -19,11 +20,10 @@
     .btn-primary { background:#1a1a1a; color:#fff; }
     .btn-primary:hover { background:#333; }
     .btn-secondary { background:#f0f0f0; color:#333; margin-left:8px; }
+    .btn-danger { background:#e53e3e; color:#fff; margin-left:8px; }
     .status-msg { margin-top:12px; padding:10px 14px; border-radius:2px; font-size:0.82rem; display:none; }
     .status-success { background:#f0fff4; border:1px solid #68d391; color:#276749; }
     .status-error { background:#fff5f5; border:1px solid #fc8181; color:#c53030; }
-    .token-setup { background:#fffbeb; border:1px solid #f6e05e; padding:16px; border-radius:2px; margin-bottom:28px; font-size:0.84rem; color:#744210; }
-    .token-setup input { margin-top:8px; }
     .preview-box { background:#f7f8fa; border:1px solid #e2e8f0; padding:16px; border-radius:2px; margin-top:12px; font-size:0.84rem; display:none; }
     .tabs { display:flex; gap:0; margin-bottom:32px; border-bottom:2px solid #e2e8f0; }
     .tab { padding:10px 20px; font-size:0.72rem; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#888; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px; }
@@ -31,6 +31,9 @@
     .tab-content { display:none; }
     .tab-content.active { display:block; }
     .hint { font-size:0.75rem; color:#888; margin-top:4px; }
+    .info-box { background:#ebf8ff; border:1px solid #90cdf4; padding:12px 16px; border-radius:2px; font-size:0.82rem; color:#2c5282; margin-bottom:20px; }
+    .admin-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:32px; }
+    .admin-header span { font-size:0.75rem; color:#888; }
   </style>
 </head>
 <body>
@@ -51,32 +54,38 @@
 
 <div class="page-hero"><h1>Admin Panel</h1></div>
 
-<!-- Lock Screen -->
+<!-- Step 1: Password -->
 <div id="lock-screen">
   <p style="font-family:'Montserrat',sans-serif;font-size:0.8rem;letter-spacing:0.12em;text-transform:uppercase;color:#555;">Lab Manager Access Only</p>
   <input id="pwd-input" type="password" placeholder="Enter password"
-    style="padding:10px 16px;font-size:0.9rem;border:1px solid #ccc;border-radius:2px;width:260px;outline:none;">
+    style="padding:10px 16px;font-size:0.9rem;border:1px solid #ccc;border-radius:2px;width:280px;outline:none;">
   <button class="btn btn-primary" onclick="checkPassword()">Enter</button>
   <p id="error-msg" style="color:#cc0000;font-size:0.8rem;display:none;">Incorrect password.</p>
 </div>
 
+<!-- Step 2: Token setup (first time only) -->
+<div id="token-screen">
+  <p style="font-family:'Montserrat',sans-serif;font-size:0.8rem;letter-spacing:0.12em;text-transform:uppercase;color:#555;text-align:center;">One-Time Setup</p>
+  <p style="font-size:0.84rem;color:#555;text-align:center;line-height:1.6;">Enter the GitHub token provided by your lab administrator. This will be saved securely in your browser — you won't need to enter it again on this device.</p>
+  <div class="form-group">
+    <input type="password" id="token-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" style="font-family:monospace;width:340px;">
+  </div>
+  <button class="btn btn-primary" onclick="saveToken()">Save Token & Continue</button>
+  <p id="token-error" style="color:#cc0000;font-size:0.8rem;display:none;">Please enter a valid token.</p>
+</div>
+
 <!-- Admin Content -->
 <div id="admin-content">
-
-  <!-- GitHub Token Setup -->
-  <div class="token-setup">
-    <strong>⚙️ GitHub Token</strong> — Enter your Personal Access Token once per session to enable automatic commits.
-    <div class="form-group" style="margin-top:8px;margin-bottom:0;">
-      <input type="password" id="github-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" style="font-family:monospace;">
-    </div>
-    <p class="hint" style="margin-top:6px;">Token is only stored in memory for this session. <a href="https://github.com/settings/tokens/new?scopes=repo&description=HsuLab+Admin" target="_blank">Generate a token here</a> (needs repo scope).</p>
+  <div class="admin-header">
+    <div class="info-box" style="margin:0;flex:1;margin-right:16px;">✅ Logged in. Token loaded from browser storage.</div>
+    <button class="btn btn-danger" onclick="logout()" style="white-space:nowrap;">Log Out & Clear Token</button>
   </div>
 
   <!-- Tabs -->
   <div class="tabs">
-    <div class="tab active" onclick="switchTab('news')">News</div>
-    <div class="tab" onclick="switchTab('people')">People</div>
-    <div class="tab" onclick="switchTab('publications')">Publications</div>
+    <div class="tab active" onclick="switchTab('news', event)">News</div>
+    <div class="tab" onclick="switchTab('people', event)">People</div>
+    <div class="tab" onclick="switchTab('publications', event)">Publications</div>
   </div>
 
   <!-- NEWS TAB -->
@@ -85,12 +94,12 @@
       <h2>Add News Item</h2>
       <div class="form-group">
         <label>Month (YYYY-MM)</label>
-        <input type="month" id="news-date" placeholder="2026-07">
+        <input type="month" id="news-date">
       </div>
       <div class="form-group">
         <label>News Text (HTML allowed for links)</label>
-        <textarea id="news-text" placeholder="Congrats to [Name] on publishing in <a href='URL' target='_blank'>Journal</a>!"></textarea>
-        <p class="hint">Tip: use &lt;a href='URL' target='_blank'&gt;text&lt;/a&gt; for links</p>
+        <textarea id="news-text" placeholder="Congrats to [Name] on publishing in &lt;a href='URL' target='_blank'&gt;Journal&lt;/a&gt;!"></textarea>
+        <p class="hint">For links: &lt;a href='URL' target='_blank'&gt;link text&lt;/a&gt;</p>
       </div>
       <button class="btn btn-primary" onclick="previewNews()">Preview</button>
       <button class="btn btn-secondary" onclick="submitNews()">Commit to GitHub</button>
@@ -102,7 +111,7 @@
   <!-- PEOPLE TAB -->
   <div id="tab-people" class="tab-content">
     <div class="admin-section">
-      <h2>Add / Update Lab Member</h2>
+      <h2>Add Lab Member</h2>
       <div class="form-group">
         <label>Full Name & Degree</label>
         <input type="text" id="person-name" placeholder="Jane Smith, Ph.D.">
@@ -142,7 +151,7 @@
         <input type="email" id="person-email" placeholder="name@utexas.edu">
       </div>
       <div class="form-group">
-        <label>Photo URL (from GitHub photos-files/ or full URL)</label>
+        <label>Photo filename (upload to photos-files/ folder first)</label>
         <input type="text" id="person-photo" placeholder="photos-files/img-xxxx.jpg">
       </div>
       <button class="btn btn-primary" onclick="previewPerson()">Preview</button>
@@ -161,7 +170,7 @@
         <input type="number" id="pub-number" placeholder="86">
       </div>
       <div class="form-group">
-        <label>Authors (bold Hsu KL with **Hsu KL**)</label>
+        <label>Authors (use **Hsu KL** to bold)</label>
         <textarea id="pub-authors" placeholder="Smith J, Jones A, **Hsu KL**."></textarea>
       </div>
       <div class="form-group">
@@ -177,7 +186,7 @@
         <input type="url" id="pub-url" placeholder="https://doi.org/10.xxxx/xxxxx">
       </div>
       <div class="form-group">
-        <label>Notes (optional, e.g. [preprint])</label>
+        <label>Notes (optional)</label>
         <input type="text" id="pub-notes" placeholder="[preprint]">
       </div>
       <button class="btn btn-primary" onclick="previewPub()">Preview</button>
@@ -186,7 +195,6 @@
       <div id="pub-status" class="status-msg"></div>
     </div>
   </div>
-
 </div>
 
 <footer>
@@ -203,55 +211,126 @@
 <script>
 const REPO = "kenhsu7337/hsulab";
 const HASH = "e81c3209e3618eded239767792800a07160ee8a614d332838236c53695f7566a";
+const TOKEN_KEY = "hsulab_admin_token";
+let sessionToken = null;
 
-// ---- Auth ----
+// ---- Crypto helpers ----
+async function deriveKey(password) {
+  const enc = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey(
+    { name:'PBKDF2', salt: enc.encode('hsulab_salt_2024'), iterations:100000, hash:'SHA-256' },
+    keyMaterial, { name:'AES-GCM', length:256 }, false, ['encrypt','decrypt']
+  );
+}
+
+async function encryptToken(token, password) {
+  const key = await deriveKey(password);
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const enc = new TextEncoder();
+  const ciphertext = await crypto.subtle.encrypt({ name:'AES-GCM', iv }, key, enc.encode(token));
+  const combined = new Uint8Array(iv.byteLength + ciphertext.byteLength);
+  combined.set(iv, 0);
+  combined.set(new Uint8Array(ciphertext), iv.byteLength);
+  return btoa(String.fromCharCode(...combined));
+}
+
+async function decryptToken(encrypted, password) {
+  const combined = Uint8Array.from(atob(encrypted), c => c.charCodeAt(0));
+  const iv = combined.slice(0, 12);
+  const ciphertext = combined.slice(12);
+  const key = await deriveKey(password);
+  const dec = await crypto.subtle.decrypt({ name:'AES-GCM', iv }, key, ciphertext);
+  return new TextDecoder().decode(dec);
+}
+
+// ---- Auth flow ----
 document.getElementById('pwd-input').addEventListener('keydown', e => { if(e.key==='Enter') checkPassword(); });
+document.getElementById('token-input').addEventListener('keydown', e => { if(e.key==='Enter') saveToken(); });
+
+let verifiedPassword = null;
 
 async function checkPassword() {
   const pwd = document.getElementById('pwd-input').value;
   const enc = new TextEncoder().encode(pwd);
   const buf = await crypto.subtle.digest('SHA-256', enc);
   const hex = Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-  if(hex === HASH) {
-    document.getElementById('lock-screen').style.display='none';
-    document.getElementById('admin-content').style.display='block';
-  } else {
+  if(hex !== HASH) {
     document.getElementById('error-msg').style.display='block';
     document.getElementById('pwd-input').value='';
+    return;
+  }
+  verifiedPassword = pwd;
+  // Check if token already saved
+  const saved = localStorage.getItem(TOKEN_KEY);
+  if(saved) {
+    try {
+      sessionToken = await decryptToken(saved, pwd);
+      showAdmin();
+    } catch(e) {
+      // Decryption failed - ask for token again
+      showTokenScreen();
+    }
+  } else {
+    showTokenScreen();
   }
 }
 
+function showTokenScreen() {
+  document.getElementById('lock-screen').style.display='none';
+  document.getElementById('token-screen').style.display='flex';
+}
+
+async function saveToken() {
+  const token = document.getElementById('token-input').value.trim();
+  if(!token.startsWith('gh')) {
+    document.getElementById('token-error').style.display='block';
+    return;
+  }
+  const encrypted = await encryptToken(token, verifiedPassword);
+  localStorage.setItem(TOKEN_KEY, encrypted);
+  sessionToken = token;
+  showAdmin();
+}
+
+function showAdmin() {
+  document.getElementById('lock-screen').style.display='none';
+  document.getElementById('token-screen').style.display='none';
+  document.getElementById('admin-content').style.display='block';
+}
+
+function logout() {
+  localStorage.removeItem(TOKEN_KEY);
+  sessionToken = null;
+  verifiedPassword = null;
+  location.reload();
+}
+
 // ---- Tabs ----
-function switchTab(name) {
+function switchTab(name, e) {
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
-  event.target.classList.add('active');
+  e.target.classList.add('active');
   document.getElementById('tab-'+name).classList.add('active');
 }
 
 // ---- GitHub API ----
-async function getFile(token, path) {
+async function getFile(path) {
   const r = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}`, {
-    headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
+    headers: { Authorization: `token ${sessionToken}`, Accept: 'application/vnd.github.v3+json' }
   });
   if(!r.ok) throw new Error(`Failed to get ${path}: ${r.status}`);
   return r.json();
 }
 
-async function commitFile(token, path, content, message, sha) {
+async function commitFile(path, content, message, sha) {
   const r = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}`, {
     method: 'PUT',
-    headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+    headers: { Authorization: `token ${sessionToken}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
     body: JSON.stringify({ message, content: btoa(unescape(encodeURIComponent(content))), sha })
   });
   if(!r.ok) { const e = await r.json(); throw new Error(e.message); }
   return r.json();
-}
-
-function getToken() {
-  const t = document.getElementById('github-token').value.trim();
-  if(!t) throw new Error('Please enter your GitHub token at the top of the page.');
-  return t;
 }
 
 function showStatus(id, msg, isError=false) {
@@ -278,15 +357,11 @@ async function submitNews() {
   if(!date || !text) { alert('Please fill in date and text.'); return; }
   showStatus('news-status', 'Committing...', false);
   try {
-    const token = getToken();
-    const file = await getFile(token, 'news-data.js');
+    const file = await getFile('news-data.js');
     const current = decodeURIComponent(escape(atob(file.content.replace(/\n/g,''))));
-    
-    // Parse and add new entry
     const newEntry = `  {\n    date: "${date}",\n    items: [\n      "${text.replace(/"/g,'\\"')}"\n    ]\n  },`;
     const updated = current.replace('const HSU_LAB_NEWS = [', `const HSU_LAB_NEWS = [\n${newEntry}`);
-    
-    await commitFile(token, 'news-data.js', updated, `Add news item: ${date}`, file.sha);
+    await commitFile('news-data.js', updated, `Add news: ${date}`, file.sha);
     showStatus('news-status', '✅ News item committed! Site will update in ~1 minute.');
     document.getElementById('news-date').value='';
     document.getElementById('news-text').value='';
@@ -306,18 +381,15 @@ function previewPerson() {
   const fave = document.getElementById('person-fave').value;
   const email = document.getElementById('person-email').value;
   const photo = document.getElementById('person-photo').value;
-  
   document.getElementById('person-preview').innerHTML = `
     <div style="display:flex;gap:16px;align-items:flex-start;">
       ${photo ? `<img src="${photo}" style="width:80px;height:100px;object-fit:cover;">` : '<div style="width:80px;height:100px;background:#eee;"></div>'}
-      <div>
-        <strong>${name} (${years})</strong><br>
-        ${hometown ? `Where are you from? ${hometown}<br>` : ''}
-        ${edu ? `<strong>Education:</strong><br>${edu.replace(/\n/g,'<br>')}<br>` : ''}
-        ${hobbies ? `Hobbies: ${hobbies}<br>` : ''}
-        ${fave ? `Favorite: ${fave}<br>` : ''}
-        ${email ? `<a href="mailto:${email}">${email}</a>` : ''}
-      </div>
+      <div><strong>${name} (${years})</strong><br>
+      ${hometown ? `Where are you from? ${hometown}<br>` : ''}
+      ${edu ? `<strong>Education:</strong><br>${edu.replace(/\n/g,'<br>')}<br>` : ''}
+      ${hobbies ? `Hobbies: ${hobbies}<br>` : ''}
+      ${fave ? `Favorite: ${fave}<br>` : ''}
+      ${email ? `<a href="mailto:${email}">${email}</a>` : ''}</div>
     </div>`;
   document.getElementById('person-preview').style.display='block';
 }
@@ -334,15 +406,11 @@ async function submitPerson() {
   const photo = document.getElementById('person-photo').value.trim();
   if(!name) { alert('Please enter a name.'); return; }
   showStatus('person-status', 'Committing...', false);
-  
   try {
-    const token = getToken();
-    const file = await getFile(token, 'people.html');
+    const file = await getFile('people.html');
     let html = decodeURIComponent(escape(atob(file.content.replace(/\n/g,''))));
-    
     const eduLines = edu.split('\n').join('<br>\n        ');
-    const newBlock = `
-    <div class="person-row">
+    const newBlock = `\n    <div class="person-row">
       ${photo ? `<img src="${photo}" alt="${name}" onerror="this.style.display='none'">` : '<div class="person-photo-placeholder"></div>'}
       <div class="person-info">
         <h4>${name} (${years})</h4>
@@ -353,25 +421,19 @@ async function submitPerson() {
         ${email ? `<p><a href="mailto:${email}">${email}</a></p>` : ''}
       </div>
     </div>`;
-
-    // Insert before the closing tag of the right group
-    const groupMap = {
+    const markerMap = {
       'Graduate Student': '<!-- END GRAD STUDENTS -->',
       'Postdoctoral Fellow': '<!-- END POSTDOCS -->',
       'Research Scientist': '<!-- END RESEARCH SCIENTISTS -->',
       'Lab Manager': '<!-- END LAB MANAGER -->',
       'Undergraduate Researcher': '<!-- END UNDERGRADS -->'
     };
-    const marker = groupMap[role];
-    if(marker && html.includes(marker)) {
-      html = html.replace(marker, newBlock + '\n    ' + marker);
-    } else {
-      // Fallback: insert before footer
-      html = html.replace('</main>', newBlock + '\n</main>');
-    }
-    
-    await commitFile(token, 'people.html', html, `Add lab member: ${name}`, file.sha);
-    showStatus('person-status', `✅ ${name} added to people page! Site will update in ~1 minute.`);
+    const marker = markerMap[role];
+    html = marker && html.includes(marker)
+      ? html.replace(marker, newBlock + '\n    ' + marker)
+      : html.replace('</main>', newBlock + '\n</main>');
+    await commitFile('people.html', html, `Add lab member: ${name}`, file.sha);
+    showStatus('person-status', `✅ ${name} added! Site will update in ~1 minute.`);
   } catch(e) {
     showStatus('person-status', `❌ Error: ${e.message}`, true);
   }
@@ -385,7 +447,6 @@ function previewPub() {
   const journal = document.getElementById('pub-journal').value;
   const url = document.getElementById('pub-url').value;
   const notes = document.getElementById('pub-notes').value;
-  
   document.getElementById('pub-preview').innerHTML = `
     <div style="display:flex;gap:12px;">
       <span style="color:#aaa;font-weight:700;min-width:28px;">${num}.</span>
@@ -403,22 +464,15 @@ async function submitPub() {
   const notes = document.getElementById('pub-notes').value.trim();
   if(!num || !title) { alert('Please fill in number and title.'); return; }
   showStatus('pub-status', 'Committing...', false);
-  
   try {
-    const token = getToken();
-    const file = await getFile(token, 'publications.html');
+    const file = await getFile('publications.html');
     let html = decodeURIComponent(escape(atob(file.content.replace(/\n/g,''))));
-    
-    const newEntry = `
-    <div class="pub-entry">
+    const newEntry = `\n    <div class="pub-entry">
       <div class="pub-number">${num}.</div>
-      <div class="pub-content">${authors} <a href="${url}" target="_blank">${title}</a> <em>${journal}</em>${notes ? ' ' + notes : ''}</div>
+      <div class="pub-content">${authors} <a href="${url}" target="_blank">${title}</a> <em>${journal}</em>${notes ? ' '+notes : ''}</div>
     </div>`;
-    
-    // Insert after the Journal Articles h2
     html = html.replace('<h2>Journal Articles</h2>', '<h2>Journal Articles</h2>\n' + newEntry);
-    
-    await commitFile(token, 'publications.html', html, `Add publication #${num}: ${title.substring(0,50)}`, file.sha);
+    await commitFile('publications.html', html, `Add publication #${num}`, file.sha);
     showStatus('pub-status', `✅ Publication #${num} added! Site will update in ~1 minute.`);
   } catch(e) {
     showStatus('pub-status', `❌ Error: ${e.message}`, true);
