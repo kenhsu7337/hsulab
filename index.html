@@ -12,35 +12,37 @@
   background-image: url('Wallpaper2018.jpg');
   background-size: cover;
   background-position: center;
-  min-height: 320px;
+  min-height: 280px;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
+  overflow: hidden;
 }
 .home-hero::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(255,255,255,0.6);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: rgba(255,255,255,0.82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 .hero-tagline {
   position: relative;
-  font-family: 'Crimson Text', serif;
-  font-size: 1.6rem;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.05rem;
   font-style: italic;
-  color: #8b0000;
-  font-weight: 600;
-  max-width: 720px;
-  padding: 0 24px;
-  line-height: 1.6;
-  animation: fadeIn 1.8s ease forwards;
+  font-weight: 400;
+  color: #333;
+  max-width: 680px;
+  padding: 0 32px;
+  line-height: 1.7;
+  letter-spacing: 0.01em;
+  animation: fadeIn 2s ease forwards;
 }
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 </style>
 </head>
