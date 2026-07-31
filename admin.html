@@ -819,7 +819,7 @@ ${files['index.html'].content.substring(0, 4000)}`;
 
       let rawText = aiData.content[0].text.trim();
       // Strip markdown fences if present
-      if (rawText.startsWith('```')) { var lines = rawText.split('\n'); lines.shift(); if (lines[lines.length-1].trim() === '```') lines.pop(); rawText = lines.join('\n').trim(); }
+      var fenceMatch = rawText.match(/```(?:json)?\s*([\s\S]*?)```/); if (fenceMatch) { rawText = fenceMatch[1].trim(); }
 
       let parsed;
       try { parsed = JSON.parse(rawText); }
