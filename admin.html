@@ -78,8 +78,13 @@
   <div class="form-group" style="max-width:360px;">
     <input type="password" id="token-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" style="font-family:monospace;">
   </div>
+  <div class="form-group" style="max-width:360px;margin-top:8px;">
+    <label style="font-size:0.75rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#555;">Anthropic API Key</label>
+    <input type="password" id="anthropic-input" placeholder="sk-ant-..." style="font-family:monospace;">
+    <p style="font-size:0.75rem;color:#888;margin-top:4px;">For the AI Update tab. Get one at console.anthropic.com</p>
+  </div>
   <button class="btn btn-primary" onclick="saveToken()">Save Token & Continue</button>
-  <p id="token-error" style="color:#cc0000;font-size:0.8rem;display:none;">Please enter a valid token (starts with gh).</p>
+  <p id="token-error" style="color:#cc0000;font-size:0.8rem;display:none;">Please enter a valid GitHub token (starts with gh).</p>
 </div>
 
 <!-- Admin Content -->
@@ -292,9 +297,9 @@
 const REPO = "kenhsu7337/hsulab";
 const HASH = "e81c3209e3618eded239767792800a07160ee8a614d332838236c53695f7566a";
 const TOKEN_KEY = "hsulab_admin_token";
-const ANTHROPIC_KEY = "sk-ant-YOURKEY";
 let sessionToken = null;
 let verifiedPassword = null;
+let sessionAnthropicKey = null;
 
 // ---- Crypto ----
 async function deriveKey(password) {
@@ -343,17 +348,23 @@ function showTokenScreen() {
 async function saveToken() {
   const token = document.getElementById('token-input').value.trim();
   if(!token.startsWith('gh')) { document.getElementById('token-error').style.display='block'; return; }
+  const anthropicKey = document.getElementById('anthropic-input').value.trim();
   localStorage.setItem(TOKEN_KEY, await encryptToken(token, verifiedPassword));
+  if(anthropicKey) localStorage.setItem('hsulab_anthropic_key', await encryptToken(anthropicKey, verifiedPassword));
   sessionToken = token;
   showAdmin();
 }
-function showAdmin() {
+async function showAdmin() {
   document.getElementById('lock-screen').style.display='none';
   document.getElementById('token-screen').style.display='none';
   document.getElementById('admin-content').style.display='block';
+  const savedAnthropicKey = localStorage.getItem('hsulab_anthropic_key');
+  if(savedAnthropicKey) {
+    try { sessionAnthropicKey = await decryptToken(savedAnthropicKey, verifiedPassword); } catch(e) {}
+  }
   loadDeleteLists();
 }
-function logout() { localStorage.removeItem(TOKEN_KEY); sessionToken=null; verifiedPassword=null; location.reload(); }
+function logout() { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem('hsulab_anthropic_key'); sessionToken=null; verifiedPassword=null; sessionAnthropicKey=null; location.reload(); }
 
 // ---- Tabs ----
 function switchTab(name, e) {
@@ -727,6 +738,7 @@ async function deletePub(num) {
   async function runAIUpdate() {
     const prompt = document.getElementById('ai-prompt').value.trim();
     if (!prompt) { showAIStatus('Please describe what needs to be updated.', 'error'); return; }
+    if (!sessionAnthropicKey) { showAIStatus('No Anthropic API key found. Please log out and log back in to enter your API key.', 'error'); return; }
 
     showAIStatus('Fetching current site files…', '');
     document.getElementById('ai-preview').style.display = 'none';
@@ -793,7 +805,7 @@ ${files['index.html'].content.substring(0, 4000)}`;
 
       const aiRes = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: 'claude-sonnet-4-6',
           max_tokens: 4000,
