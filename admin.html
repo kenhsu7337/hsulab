@@ -94,6 +94,7 @@
     <div class="tab" onclick="switchTab('people', event)">Add People</div>
     <div class="tab" onclick="switchTab('publications', event)">Add Publication</div>
     <div class="tab" onclick="switchTab('delete', event)">Delete</div>
+    <div class="tab" onclick="switchTab('ai', event)">✨ AI Update</div>
   </div>
 
   <!-- ADD NEWS TAB -->
@@ -243,6 +244,36 @@
       <div id="delete-pub-status" class="status-msg"></div>
     </div>
   </div>
+
+  <!-- AI UPDATE TAB -->
+  <div id="tab-ai" class="tab-content">
+    <div class="admin-section">
+      <h2>AI-Powered Update</h2>
+      <div class="info-box">
+        Describe what needs to be updated in plain English — new publication, lab member change, news item, or any combination. The AI will generate the exact HTML changes. You review before anything is committed.
+      </div>
+      <div class="form-group">
+        <label>Describe the update</label>
+        <textarea id="ai-prompt" rows="6" placeholder="e.g. &#10;• John Meinert graduated with his PhD in May 2025 and is now a postdoc at MIT. Congrats John!&#10;• We published a new paper on lipid signaling: DOI 10.1038/s41589-025-1234-5&#10;• New grad student Jane Park joined the lab from UCLA"></textarea>
+      </div>
+      <button class="btn btn-primary" onclick="runAIUpdate()">Generate Changes</button>
+      <div id="ai-status" class="status-msg" style="margin-top:12px;display:none;"></div>
+    </div>
+
+    <div id="ai-preview" style="display:none;">
+      <div class="admin-section">
+        <h2>Preview Changes</h2>
+        <p class="hint" style="margin-bottom:16px;">Review the proposed changes below. Each block shows what will be replaced (red) and the new content (green).</p>
+        <div id="ai-changes-list"></div>
+        <div style="margin-top:24px;display:flex;gap:12px;flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="confirmAIChanges()">Confirm &amp; Push to GitHub</button>
+          <button class="btn btn-secondary" onclick="discardAIChanges()" style="margin-left:0;">Discard</button>
+        </div>
+        <div id="ai-commit-status" class="status-msg" style="margin-top:12px;display:none;"></div>
+      </div>
+    </div>
+  </div>
+
 
 </div>
 
@@ -688,6 +719,215 @@ async function deletePub(num) {
     setTimeout(loadPubDeleteList,2000);
   } catch(e){ showStatus('delete-pub-status',`❌ Error: ${e.message}`,true); }
 }
+
+  // ── AI UPDATE ──────────────────────────────────────────────────────────────
+  let aiProposedChanges = [];
+
+  async function runAIUpdate() {
+    const prompt = document.getElementById('ai-prompt').value.trim();
+    if (!prompt) { showAIStatus('Please describe what needs to be updated.', 'error'); return; }
+
+    showAIStatus('Fetching current site files…', '');
+    document.getElementById('ai-preview').style.display = 'none';
+    aiProposedChanges = [];
+
+    try {
+      // Fetch all relevant files in parallel
+      const [newsFile, peopleFile, pubsFile, newsDataFile] = await Promise.all([
+        getFile('index.html'),
+        getFile('people.html'),
+        getFile('publications.html'),
+        getFile('news-data.js')
+      ]);
+
+      const files = {
+        'index.html':       { raw: newsFile,     content: decode(newsFile.content) },
+        'people.html':      { raw: peopleFile,   content: decode(peopleFile.content) },
+        'publications.html':{ raw: pubsFile,     content: decode(pubsFile.content) },
+        'news-data.js':     { raw: newsDataFile, content: decode(newsDataFile.content) }
+      };
+
+      showAIStatus('Generating changes with AI…', '');
+
+      const systemPrompt = `You are an assistant that updates a chemistry lab website (Hsu Lab, UT Austin).
+Given a plain-English update request and current HTML/JS file contents, output ONLY a valid JSON object — no markdown, no backticks, no explanation.
+
+Format:
+{
+  "summary": "Brief one-line summary of all changes",
+  "changes": [
+    {
+      "file": "filename.html",
+      "description": "What changed in plain English",
+      "old": "exact substring currently in the file",
+      "new": "replacement string"
+    }
+  ]
+}
+
+Rules:
+- Only include files that need changes.
+- "old" must be an exact verbatim substring of the current file content (copy it precisely including whitespace/newlines).
+- For news: add a new entry to news-data.js by inserting after "const HSU_LAB_NEWS = [" — use today's date formatted as YYYY-MM.
+- For publications: add to publications.html after '<h2>Journal Articles</h2>' using the existing pub-entry div structure. Auto-increment the pub number.
+- For people changes (graduation/departure): update or remove the person-row in people.html and add a news item.
+- Keep changes minimal and match existing code style exactly.
+- If a DOI is mentioned, use it as the URL; format the pub entry like existing entries.
+- Today's date is ${new Date().toISOString().slice(0,7)}.`;
+
+      const userContent = `UPDATE REQUEST:
+${prompt}
+
+--- news-data.js (first 3000 chars) ---
+${files['news-data.js'].content.substring(0, 3000)}
+
+--- publications.html (first 6000 chars) ---
+${files['publications.html'].content.substring(0, 6000)}
+
+--- people.html (first 6000 chars) ---
+${files['people.html'].content.substring(0, 6000)}
+
+--- index.html (first 4000 chars) ---
+${files['index.html'].content.substring(0, 4000)}`;
+
+      const aiRes = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 4000,
+          system: systemPrompt,
+          messages: [{ role: 'user', content: userContent }]
+        })
+      });
+
+      const aiData = await aiRes.json();
+      if (aiData.error) throw new Error('Anthropic API: ' + aiData.error.message);
+
+      let rawText = aiData.content[0].text.trim();
+      // Strip markdown fences if present
+      rawText = rawText.replace(/^```json
+?|^```
+?|```$/gm, '').trim();
+
+      let parsed;
+      try { parsed = JSON.parse(rawText); }
+      catch(e) { throw new Error('AI returned invalid JSON. Try rephrasing your request.
+
+Raw: ' + rawText.substring(0,300)); }
+
+      if (!parsed.changes || !parsed.changes.length) {
+        showAIStatus('AI found no changes needed. Try being more specific.', 'error');
+        return;
+      }
+
+      // Validate that "old" strings actually exist in files
+      for (const c of parsed.changes) {
+        if (!files[c.file]) throw new Error(`Unknown file: ${c.file}`);
+        if (!files[c.file].content.includes(c.old)) {
+          throw new Error(`AI proposed a change to ${c.file} but the target text was not found. Try again.`);
+        }
+      }
+
+      // Store for commit
+      aiProposedChanges = parsed.changes.map(c => ({
+        ...c,
+        sha: files[c.file].raw.sha,
+        originalContent: files[c.file].content
+      }));
+
+      showAIStatus('', '');
+      renderAIPreview(parsed.summary, parsed.changes);
+
+    } catch(err) {
+      showAIStatus('Error: ' + err.message, 'error');
+      console.error(err);
+    }
+  }
+
+  function renderAIPreview(summary, changes) {
+    const container = document.getElementById('ai-changes-list');
+    container.innerHTML = `<p style="font-weight:600;margin-bottom:20px;font-size:0.9rem;">${escHtml(summary)}</p>`;
+
+    changes.forEach(c => {
+      const div = document.createElement('div');
+      div.style.cssText = 'border:1px solid #e2e8f0;border-radius:3px;margin-bottom:20px;overflow:hidden;';
+      div.innerHTML = `
+        <div style="background:#f7f8fa;padding:10px 16px;font-size:0.78rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#555;border-bottom:1px solid #e2e8f0;">
+          ${escHtml(c.file)} — ${escHtml(c.description)}
+        </div>
+        <div style="padding:14px 16px;">
+          <div style="font-size:0.7rem;color:#888;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Removing:</div>
+          <pre style="background:#fff5f5;border:1px solid #fca5a5;padding:10px;border-radius:2px;font-size:0.76rem;overflow-x:auto;white-space:pre-wrap;word-break:break-all;margin:0 0 12px;">${escHtml(c.old)}</pre>
+          <div style="font-size:0.7rem;color:#888;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Inserting:</div>
+          <pre style="background:#f0fdf4;border:1px solid #86efac;padding:10px;border-radius:2px;font-size:0.76rem;overflow-x:auto;white-space:pre-wrap;word-break:break-all;margin:0;">${escHtml(c.new)}</pre>
+        </div>`;
+      container.appendChild(div);
+    });
+
+    document.getElementById('ai-preview').style.display = 'block';
+    document.getElementById('ai-preview').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  async function confirmAIChanges() {
+    showAICommitStatus('Committing changes to GitHub…', '');
+    try {
+      // Group changes by file and apply sequentially
+      const fileChanges = {};
+      for (const c of aiProposedChanges) {
+        if (!fileChanges[c.file]) {
+          fileChanges[c.file] = { content: c.originalContent, sha: c.sha, messages: [] };
+        }
+        fileChanges[c.file].content = fileChanges[c.file].content.replace(c.old, c.new);
+        fileChanges[c.file].messages.push(c.description);
+      }
+
+      let committed = 0;
+      for (const [filename, fileData] of Object.entries(fileChanges)) {
+        const message = 'AI update: ' + fileData.messages.join('; ');
+        const result = await commitFile(filename, fileData.content, message, fileData.sha);
+        committed++;
+      }
+
+      showAICommitStatus(`✅ ${committed} file(s) updated and pushed to GitHub. Site will rebuild in ~30 seconds.`, 'success');
+      document.getElementById('ai-prompt').value = '';
+      setTimeout(() => {
+        document.getElementById('ai-preview').style.display = 'none';
+        document.getElementById('ai-commit-status').style.display = 'none';
+        loadDeleteLists();
+      }, 4000);
+
+    } catch(err) {
+      showAICommitStatus('Error: ' + err.message, 'error');
+    }
+  }
+
+  function discardAIChanges() {
+    aiProposedChanges = [];
+    document.getElementById('ai-preview').style.display = 'none';
+    document.getElementById('ai-status').style.display = 'none';
+    document.getElementById('ai-prompt').value = '';
+  }
+
+  function showAIStatus(msg, type) {
+    const el = document.getElementById('ai-status');
+    el.style.display = msg ? 'block' : 'none';
+    el.className = 'status-msg' + (type === 'error' ? ' status-error' : type === 'success' ? ' status-success' : '');
+    el.textContent = msg;
+  }
+
+  function showAICommitStatus(msg, type) {
+    const el = document.getElementById('ai-commit-status');
+    el.style.display = msg ? 'block' : 'none';
+    el.className = 'status-msg' + (type === 'error' ? ' status-error' : type === 'success' ? ' status-success' : '');
+    el.textContent = msg;
+  }
+  // ── END AI UPDATE ──────────────────────────────────────────────────────────
+
 </script>
 </body>
 </html>
