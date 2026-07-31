@@ -292,6 +292,7 @@
 const REPO = "kenhsu7337/hsulab";
 const HASH = "e81c3209e3618eded239767792800a07160ee8a614d332838236c53695f7566a";
 const TOKEN_KEY = "hsulab_admin_token";
+const ANTHROPIC_KEY = "sk-ant-YOURKEY";
 let sessionToken = null;
 let verifiedPassword = null;
 
@@ -792,7 +793,7 @@ ${files['index.html'].content.substring(0, 4000)}`;
 
       const aiRes = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
         body: JSON.stringify({
           model: 'claude-sonnet-4-6',
           max_tokens: 4000,
