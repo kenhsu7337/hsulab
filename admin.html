@@ -806,15 +806,11 @@ ${files['index.html'].content.substring(0, 4000)}`;
 
       let rawText = aiData.content[0].text.trim();
       // Strip markdown fences if present
-      rawText = rawText.replace(/^```json
-?|^```
-?|```$/gm, '').trim();
+      if (rawText.startsWith('```')) { var lines = rawText.split('\n'); lines.shift(); if (lines[lines.length-1].trim() === '```') lines.pop(); rawText = lines.join('\n').trim(); }
 
       let parsed;
       try { parsed = JSON.parse(rawText); }
-      catch(e) { throw new Error('AI returned invalid JSON. Try rephrasing your request.
-
-Raw: ' + rawText.substring(0,300)); }
+      catch(e) { throw new Error('AI returned invalid JSON. Try rephrasing your request. Raw: ' + rawText.substring(0,300)); }
 
       if (!parsed.changes || !parsed.changes.length) {
         showAIStatus('AI found no changes needed. Try being more specific.', 'error');
