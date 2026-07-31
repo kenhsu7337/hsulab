@@ -803,9 +803,9 @@ ${files['people.html'].content.substring(0, 6000)}
 --- index.html (first 4000 chars) ---
 ${files['index.html'].content.substring(0, 4000)}`;
 
-      const aiRes = await fetch('https://api.anthropic.com/v1/messages', {
+      const aiRes = await fetch('https://plain-fog-ff97.kenhsu7337.workers.dev/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-key': sessionAnthropicKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+        headers: { 'Content-Type': 'application/json', 'x-api-key': sessionAnthropicKey, 'anthropic-version': '2023-06-01' },
         body: JSON.stringify({
           model: 'claude-sonnet-4-6',
           max_tokens: 4000,
