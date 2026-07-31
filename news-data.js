@@ -4,12 +4,6 @@
 
 const HSU_LAB_NEWS = [
   {
-    date: "2026-07",
-    items: [
-      "Congrats to the lab on a new publication in <a href='https://www.nature.com/articles/s41467-026-73407-3' target='_blank'>Nature Communications</a>!"
-    ]
-  },
-  {
     date: "2026-05",
     items: [
       "Congrats to Surya for receiving the Summer 2026 Chemistry Department Research Fellowship!",
