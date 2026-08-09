@@ -784,14 +784,14 @@ Rules:
 - For news: add a new entry to news-data.js by inserting after "const HSU_LAB_NEWS = [" — use today's date formatted as YYYY-MM.
 - For publications: add to publications.html after '<h2>Journal Articles</h2>' using the existing pub-entry div structure. Auto-increment the pub number.
 - For adding a NEW graduate student: insert a new person-row div in people.html inside the Graduate Students section. Find the last existing grad student person-row and insert the new one AFTER it. Use this exact structure (match surrounding indentation):
-    <div class="person-row">
+        <div class="person-row">
       <div class="person-photo-placeholder"></div>
       <div class="person-info">
-        <h4>[Name] ([Year] - Present)</h4>
+        <h4>[Name] ([Year] – Present)</h4>
         <p>Where are you from? [Hometown]</p>
         <p><strong>Education:</strong><br>
         [Degree], [Institution]</p>
-        <a href="mailto:[email]">[email]</a></p>
+        <p><a href="mailto:[email]">[email]</a></p>
       </div>
     </div>
 - For adding a NEW postdoc or research scientist: same pattern but insert in the appropriate section.
