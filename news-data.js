@@ -16,7 +16,7 @@ const HSU_LAB_NEWS = [
       "Congrats to Zhonghao Li and co-authors on publishing in <a href='https://doi.org/10.1038/s41467-026-73407-3' target='_blank'><em>Nature Communications</em></a> on a chemoproteomic atlas of the human purine interactome for regioselective ligand discovery!"
     ]
   },
-  {
+    {
     date: "2026-05",
     items: [
       "Congrats to Surya for receiving the Summer 2026 Chemistry Department Research Fellowship!",
