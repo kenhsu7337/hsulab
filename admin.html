@@ -126,9 +126,23 @@
   <div id="tab-people" class="tab-content">
     <div class="admin-section">
       <h2>Add Lab Member</h2>
+
+      <div style="background:#f0f7ff;border:1px solid #bfdbfe;border-radius:3px;padding:16px;margin-bottom:24px;">
+        <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#555;margin-bottom:10px;">UT Directory Lookup</div>
+        <div style="display:flex;gap:8px;align-items:flex-end;">
+          <div class="form-group" style="flex:1;margin-bottom:0;">
+            <label>Name or EID</label>
+            <input type="text" id="dir-query" placeholder="Jane Smith or jsmith123" onkeydown="if(event.key==='Enter')lookupDirectory()">
+          </div>
+          <button class="btn btn-primary" onclick="lookupDirectory()" style="margin-bottom:0;white-space:nowrap;">Look Up</button>
+        </div>
+        <div id="dir-status" style="font-size:0.82rem;color:#555;margin-top:8px;display:none;"></div>
+        <div id="dir-results" style="margin-top:12px;display:none;"></div>
+      </div>
+
       <div class="form-group">
-        <label>Full Name & Degree</label>
-        <input type="text" id="person-name" placeholder="Jane Smith, Ph.D.">
+        <label>Full Name</label>
+        <input type="text" id="person-name" placeholder="Jane Smith">
       </div>
       <div class="form-group">
         <label>Role</label>
@@ -439,6 +453,73 @@ async function submitNews() {
     setTimeout(loadDeleteLists, 3000);
   } catch(e){ showStatus('news-status',`❌ Error: ${e.message}`,true); }
 }
+
+// ---- UT DIRECTORY LOOKUP ----
+  async function lookupDirectory() {
+    const query = document.getElementById('dir-query').value.trim();
+    if (!query) return;
+    const statusEl = document.getElementById('dir-status');
+    const resultsEl = document.getElementById('dir-results');
+    statusEl.style.display = 'block';
+    statusEl.textContent = 'Searching UT Directory...';
+    resultsEl.style.display = 'none';
+
+    try {
+      // Use Cloudflare Worker to proxy the UT LDAP search
+      const res = await fetch('https://plain-fog-ff97.kenhsu7337.workers.dev/ut-directory', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query })
+      });
+      const data = await res.json();
+
+      if (!data.results || data.results.length === 0) {
+        statusEl.textContent = 'No results found. Try a different spelling or their EID.';
+        return;
+      }
+
+      statusEl.style.display = 'none';
+      resultsEl.style.display = 'block';
+      resultsEl.innerHTML = '';
+
+      data.results.slice(0, 5).forEach(person => {
+        const div = document.createElement('div');
+        div.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border:1px solid #e2e8f0;border-radius:2px;margin-bottom:6px;background:white;';
+        const info = document.createElement('div');
+        info.style.fontSize = '0.84rem';
+        info.innerHTML = '<strong>' + (person.displayName || person.cn || '') + '</strong>'
+          + (person.mail ? '<br><span style="color:#555;">' + person.mail + '</span>' : '')
+          + (person.title ? '<br><span style="color:#888;font-size:0.78rem;">' + person.title + '</span>' : '');
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-secondary';
+        btn.style.cssText = 'font-size:0.72rem;padding:4px 10px;white-space:nowrap;';
+        btn.textContent = 'Use This';
+        btn.onclick = () => fillFromDirectory(person);
+        div.appendChild(info);
+        div.appendChild(btn);
+        resultsEl.appendChild(div);
+      });
+
+    } catch(err) {
+      statusEl.textContent = 'Error: ' + err.message;
+    }
+  }
+
+  function fillFromDirectory(person) {
+    const name = person.displayName || person.cn || '';
+    const email = person.mail || '';
+    if (name) document.getElementById('person-name').value = name;
+    if (email) document.getElementById('person-email').value = email;
+    // Trigger element tile preview
+    const ni = document.getElementById('person-name');
+    ni.dispatchEvent(new Event('input'));
+    // Hide results
+    document.getElementById('dir-results').style.display = 'none';
+    document.getElementById('dir-status').style.display = 'none';
+    document.getElementById('dir-query').value = '';
+    // Scroll to form
+    document.getElementById('person-name').focus();
+  }
 
 // ---- ADD PEOPLE ----
   // ELEMENT TILE GENERATOR
