@@ -809,8 +809,8 @@ ${files['news-data.js'].content.substring(0, 3000)}
 --- publications.html (first 6000 chars) ---
 ${files['publications.html'].content.substring(0, 6000)}
 
---- people.html (full content) ---
-${files['people.html'].content}
+--- people.html (Graduate Students section only) ---
+${files['people.html'].content.substring(files['people.html'].content.indexOf('Graduate Students'), files['people.html'].content.indexOf('Graduate Students') + 8000)}
 
 --- index.html (first 4000 chars) ---
 ${files['index.html'].content.substring(0, 4000)}`;
@@ -820,7 +820,7 @@ ${files['index.html'].content.substring(0, 4000)}`;
         headers: { 'Content-Type': 'application/json', 'x-api-key': sessionAnthropicKey, 'anthropic-version': '2023-06-01' },
         body: JSON.stringify({
           model: 'claude-sonnet-4-6',
-          max_tokens: 4000,
+          max_tokens: 8000,
           system: systemPrompt,
           messages: [{ role: 'user', content: userContent }]
         })
