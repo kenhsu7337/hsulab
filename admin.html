@@ -441,14 +441,6 @@ async function submitNews() {
 }
 
 // ---- ADD PEOPLE ----
-function previewPerson() {
-  const name=document.getElementById('person-name').value;
-  const years=document.getElementById('person-years').value;
-  const hometown=document.getElementById('person-hometown').value;
-  const edu=document.getElementById('person-edu').value;
-  const hobbies=document.getElementById('person-hobbies').value;
-  const fave=document.getElementById('person-fave').value;
-  const email=document.getElementById('person-email').value;
   // ELEMENT TILE GENERATOR
   const ELEMENT_MAP={A:{symbol:'Ac',number:89,name:'Actinium',color:'#7B5EA7'},B:{symbol:'B',number:5,name:'Boron',color:'#2E7D32'},C:{symbol:'C',number:6,name:'Carbon',color:'#1A237E'},D:{symbol:'Dy',number:66,name:'Dysprosium',color:'#00695C'},E:{symbol:'Es',number:99,name:'Einsteinium',color:'#78288C'},F:{symbol:'F',number:9,name:'Fluorine',color:'#0277BD'},G:{symbol:'Ge',number:32,name:'Germanium',color:'#4E342E'},H:{symbol:'Hf',number:72,name:'Hafnium',color:'#1565C0'},I:{symbol:'In',number:49,name:'Indium',color:'#37474F'},J:{symbol:'Kr',number:36,name:'Krypton',color:'#4527A0'},K:{symbol:'K',number:19,name:'Potassium',color:'#E65100'},L:{symbol:'La',number:57,name:'Lanthanum',color:'#00838F'},M:{symbol:'Mg',number:12,name:'Magnesium',color:'#558B2F'},N:{symbol:'Ni',number:28,name:'Nickel',color:'#37474F'},O:{symbol:'Os',number:76,name:'Osmium',color:'#263238'},P:{symbol:'Pt',number:78,name:'Platinum',color:'#546E7A'},Q:{symbol:'Rb',number:37,name:'Rubidium',color:'#BF360C'},R:{symbol:'Rh',number:45,name:'Rhodium',color:'#4A148C'},S:{symbol:'Si',number:14,name:'Silicon',color:'#1B5E20'},T:{symbol:'Ti',number:22,name:'Titanium',color:'#0D47A1'},U:{symbol:'U',number:92,name:'Uranium',color:'#1B5E20'},V:{symbol:'V',number:23,name:'Vanadium',color:'#880E4F'},W:{symbol:'W',number:74,name:'Tungsten',color:'#212121'},X:{symbol:'Xe',number:54,name:'Xenon',color:'#4A148C'},Y:{symbol:'Y',number:39,name:'Yttrium',color:'#004D40'},Z:{symbol:'Zn',number:30,name:'Zinc',color:'#BF360C'}};
   function getElement(name){const f=name.trim()[0].toUpperCase();return ELEMENT_MAP[f]||{symbol:'Hs',number:108,name:'Hassium',color:'#37474F'};}
