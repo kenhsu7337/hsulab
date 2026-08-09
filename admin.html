@@ -165,11 +165,22 @@
         <input type="email" id="person-email" placeholder="name@utexas.edu">
       </div>
       <div class="form-group">
-        <label>Photo filename</label>
-        <input type="text" id="person-photo" placeholder="photos-files/img-xxxx.jpg">
+        <label>Photo <span style="font-weight:400;color:#888;">(optional — element tile auto-generated if omitted)</span></label>
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+          <label style="display:inline-flex;align-items:center;gap:8px;background:#f7f8fa;border:1px solid #e2e8f0;border-radius:2px;padding:8px 16px;cursor:pointer;font-size:0.82rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;">
+            Choose Photo
+            <input type="file" id="person-photo-file" accept="image/*" style="display:none;" onchange="handlePhotoSelect(this)">
+          </label>
+          <span id="photo-filename" style="font-size:0.82rem;color:#888;">No file chosen</span>
+          <img id="photo-preview-img" style="display:none;width:80px;height:94px;object-fit:cover;border:1px solid #e2e8f0;">
+          <canvas id="element-tile-preview" width="80" height="94" style="display:none;border:1px solid #e2e8f0;"></canvas>
+        </div>
+        <p id="tile-label" style="font-size:0.75rem;color:#888;margin-top:6px;display:none;"></p>
       </div>
-      <button class="btn btn-primary" onclick="previewPerson()">Preview</button>
-      <button class="btn btn-secondary" onclick="submitPerson()">Commit to GitHub</button>
+      <div style="display:flex;gap:12px;margin-top:8px;">
+        <button class="btn btn-primary" onclick="previewPerson()">Preview</button>
+        <button class="btn btn-secondary" onclick="submitPerson()">Commit to GitHub</button>
+      </div>
       <div id="person-preview" class="preview-box"></div>
       <div id="person-status" class="status-msg"></div>
     </div>
@@ -382,11 +393,12 @@ async function getFile(path) {
   if(!r.ok) throw new Error(`Failed to get ${path}: ${r.status}`);
   return r.json();
 }
-async function commitFile(path, content, message, sha) {
+async function commitFile(path, content, message, sha, isBase64=false) {
+  const encoded = isBase64 ? content : btoa(unescape(encodeURIComponent(content)));
   const r = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}`, {
     method:'PUT',
     headers:{ Authorization:`token ${sessionToken}`, Accept:'application/vnd.github.v3+json', 'Content-Type':'application/json' },
-    body:JSON.stringify({ message, content:btoa(unescape(encodeURIComponent(content))), sha })
+    body:JSON.stringify({ message, content:encoded, sha })
   });
   if(!r.ok) { const e=await r.json(); throw new Error(e.message); }
   return r.json();
@@ -437,54 +449,78 @@ function previewPerson() {
   const hobbies=document.getElementById('person-hobbies').value;
   const fave=document.getElementById('person-fave').value;
   const email=document.getElementById('person-email').value;
-  const photo=document.getElementById('person-photo').value;
-  document.getElementById('person-preview').innerHTML=`
-    <div style="display:flex;gap:16px;align-items:flex-start;">
-      ${photo?`<img src="${photo}" style="width:80px;height:100px;object-fit:cover;">`:'<div style="width:80px;height:100px;background:#eee;"></div>'}
-      <div><strong>${name} (${years})</strong><br>
-      ${hometown?`Where are you from? ${hometown}<br>`:''}
-      ${edu?`<strong>Education:</strong><br>${edu.replace(/\n/g,'<br>')}<br>`:''}
-      ${hobbies?`Hobbies: ${hobbies}<br>`:''}
-      ${fave?`Favorite: ${fave}<br>`:''}
-      ${email?`<a href="mailto:${email}">${email}</a>`:''}</div>
-    </div>`;
-  document.getElementById('person-preview').style.display='block';
-}
-async function submitPerson() {
-  const name=document.getElementById('person-name').value.trim();
-  const role=document.getElementById('person-role').value;
-  const years=document.getElementById('person-years').value.trim();
-  const hometown=document.getElementById('person-hometown').value.trim();
-  const edu=document.getElementById('person-edu').value.trim();
-  const hobbies=document.getElementById('person-hobbies').value.trim();
-  const fave=document.getElementById('person-fave').value.trim();
-  const email=document.getElementById('person-email').value.trim();
-  const photo=document.getElementById('person-photo').value.trim();
-  if(!name){alert('Please enter a name.');return;}
-  showStatus('person-status','Committing...');
-  try {
-    const file=await getFile('people.html');
-    let html=decode(file.content);
-    const eduLines=edu.split('\n').join('<br>\n        ');
-    const block=`\n    <div class="person-row">
-      ${photo?`<img src="${photo}" alt="${name}" onerror="this.style.display='none'">`:'<div class="person-photo-placeholder"></div>'}
-      <div class="person-info">
-        <h4>${name} (${years})</h4>
-        ${hometown?`<p>Where are you from? ${hometown}</p>`:''}
-        ${edu?`<p><strong>Education:</strong><br>\n        ${eduLines}</p>`:''}
-        ${hobbies?`<p>Hobbies: ${hobbies}</p>`:''}
-        ${fave?`<p>Favorite organism or molecule: ${fave}</p>`:''}
-        ${email?`<p><a href="mailto:${email}">${email}</a></p>`:''}
-      </div>
-    </div>`;
-    const markers={'Graduate Student':'<!-- END GRAD STUDENTS -->','Postdoctoral Fellow':'<!-- END POSTDOCS -->','Research Scientist':'<!-- END RESEARCH SCIENTISTS -->','Lab Manager':'<!-- END LAB MANAGER -->','Undergraduate Researcher':'<!-- END UNDERGRADS -->'};
-    const marker=markers[role];
-    html=marker&&html.includes(marker)?html.replace(marker,block+'\n    '+marker):html.replace('</main>',block+'\n</main>');
-    await commitFile('people.html',html,`Add lab member: ${name}`,file.sha);
-    showStatus('person-status',`✅ ${name} added! Site will update in ~1 minute.`);
-    setTimeout(loadDeleteLists,3000);
-  } catch(e){ showStatus('person-status',`❌ Error: ${e.message}`,true); }
-}
+  // ELEMENT TILE GENERATOR
+  const ELEMENT_MAP={A:{symbol:'Ac',number:89,name:'Actinium',color:'#7B5EA7'},B:{symbol:'B',number:5,name:'Boron',color:'#2E7D32'},C:{symbol:'C',number:6,name:'Carbon',color:'#1A237E'},D:{symbol:'Dy',number:66,name:'Dysprosium',color:'#00695C'},E:{symbol:'Es',number:99,name:'Einsteinium',color:'#78288C'},F:{symbol:'F',number:9,name:'Fluorine',color:'#0277BD'},G:{symbol:'Ge',number:32,name:'Germanium',color:'#4E342E'},H:{symbol:'Hf',number:72,name:'Hafnium',color:'#1565C0'},I:{symbol:'In',number:49,name:'Indium',color:'#37474F'},J:{symbol:'Kr',number:36,name:'Krypton',color:'#4527A0'},K:{symbol:'K',number:19,name:'Potassium',color:'#E65100'},L:{symbol:'La',number:57,name:'Lanthanum',color:'#00838F'},M:{symbol:'Mg',number:12,name:'Magnesium',color:'#558B2F'},N:{symbol:'Ni',number:28,name:'Nickel',color:'#37474F'},O:{symbol:'Os',number:76,name:'Osmium',color:'#263238'},P:{symbol:'Pt',number:78,name:'Platinum',color:'#546E7A'},Q:{symbol:'Rb',number:37,name:'Rubidium',color:'#BF360C'},R:{symbol:'Rh',number:45,name:'Rhodium',color:'#4A148C'},S:{symbol:'Si',number:14,name:'Silicon',color:'#1B5E20'},T:{symbol:'Ti',number:22,name:'Titanium',color:'#0D47A1'},U:{symbol:'U',number:92,name:'Uranium',color:'#1B5E20'},V:{symbol:'V',number:23,name:'Vanadium',color:'#880E4F'},W:{symbol:'W',number:74,name:'Tungsten',color:'#212121'},X:{symbol:'Xe',number:54,name:'Xenon',color:'#4A148C'},Y:{symbol:'Y',number:39,name:'Yttrium',color:'#004D40'},Z:{symbol:'Zn',number:30,name:'Zinc',color:'#BF360C'}};
+  function getElement(name){const f=name.trim()[0].toUpperCase();return ELEMENT_MAP[f]||{symbol:'Hs',number:108,name:'Hassium',color:'#37474F'};}
+  function drawElementTile(canvas,el){const ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;ctx.fillStyle=el.color;ctx.fillRect(0,0,w,h);ctx.strokeStyle='rgba(255,255,255,0.6)';ctx.lineWidth=2;ctx.strokeRect(4,4,w-8,h-8);ctx.fillStyle='white';ctx.font='11px sans-serif';ctx.fillText(el.number,9,16);ctx.font='bold '+(el.symbol.length>2?'22px':'28px')+' sans-serif';ctx.textAlign='center';ctx.fillText(el.symbol,w/2,h/2+8);ctx.font='9px sans-serif';ctx.fillText(el.name,w/2,h-18);ctx.textAlign='left';}
+  function handlePhotoSelect(input){if(input.files&&input.files[0]){const file=input.files[0];document.getElementById('photo-filename').textContent=file.name;const reader=new FileReader();reader.onload=e=>{document.getElementById('photo-preview-img').src=e.target.result;document.getElementById('photo-preview-img').style.display='block';document.getElementById('element-tile-preview').style.display='none';document.getElementById('tile-label').style.display='none';};reader.readAsDataURL(file);}}
+  document.addEventListener('DOMContentLoaded',()=>{const ni=document.getElementById('person-name');if(ni)ni.addEventListener('input',()=>{const name=ni.value;const fi=document.getElementById('person-photo-file');if(!name||fi.files.length>0)return;const el=getElement(name);const canvas=document.getElementById('element-tile-preview');canvas.style.display='block';document.getElementById('photo-preview-img').style.display='none';drawElementTile(canvas,el);const lbl=document.getElementById('tile-label');lbl.style.display='block';lbl.textContent='Auto-generated: '+el.name+' ('+el.symbol+')';});});
+  function previewPerson(){
+    const name=document.getElementById('person-name').value.trim();
+    const years=document.getElementById('person-years').value.trim();
+    const hometown=document.getElementById('person-hometown').value.trim();
+    const edu=document.getElementById('person-edu').value.trim();
+    const hobbies=document.getElementById('person-hobbies').value.trim();
+    const fave=document.getElementById('person-fave').value.trim();
+    const email=document.getElementById('person-email').value.trim();
+    const fi=document.getElementById('person-photo-file');
+    let photoHtml='';
+    if(fi.files.length>0){photoHtml='<img src="'+document.getElementById('photo-preview-img').src+'" style="width:80px;height:94px;object-fit:cover;flex-shrink:0;">';}
+    else if(name){const el=getElement(name);const c=document.createElement('canvas');c.width=80;c.height=94;drawElementTile(c,el);photoHtml='<img src="'+c.toDataURL()+'" style="width:80px;height:94px;flex-shrink:0;">';}
+    const yearStr=years?years+' \u2013 Present':'';
+    document.getElementById('person-preview').innerHTML='<div style="display:flex;gap:16px;align-items:flex-start;">'+photoHtml+'<div><strong>'+name+(yearStr?' ('+yearStr+')':'')+'</strong><br>'+(hometown?'Where are you from? '+hometown+'<br>':'')+(edu?'<strong>Education:</strong><br>'+edu.replace(/\n/g,'<br>')+'<br>':'')+(hobbies?'Hobbies: '+hobbies+'<br>':'')+(fave?'Favorite molecule or organism: '+fave+'<br>':'')+(email?'<a href="mailto:'+email+'">'+email+'</a>':'')+'</div></div>';
+    document.getElementById('person-preview').style.display='block';
+  }
+  async function submitPerson(){
+    const name=document.getElementById('person-name').value.trim();
+    const role=document.getElementById('person-role').value;
+    const years=document.getElementById('person-years').value.trim();
+    const hometown=document.getElementById('person-hometown').value.trim();
+    const edu=document.getElementById('person-edu').value.trim();
+    const hobbies=document.getElementById('person-hobbies').value.trim();
+    const fave=document.getElementById('person-fave').value.trim();
+    const email=document.getElementById('person-email').value.trim();
+    const fi=document.getElementById('person-photo-file');
+    const hasPhoto=fi.files.length>0;
+    if(!name){alert('Please enter a name.');return;}
+    showStatus('person-status','Preparing...');
+    try{
+      let photoSrc='';
+      if(hasPhoto){
+        const file=fi.files[0];
+        const ext=file.name.split('.').pop().toLowerCase();
+        const fname='site-images/'+name.toLowerCase().replace(/[^a-z0-9]+/g,'-')+'.'+ext;
+        const b64=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(file);});
+        showStatus('person-status','Uploading photo...');
+        await commitFile(fname,b64,'Add photo for '+name,null,true);
+        photoSrc=fname;
+      }else{
+        const el=getElement(name);
+        const canvas=document.createElement('canvas');canvas.width=400;canvas.height=470;
+        drawElementTile(canvas,el);
+        const b64=canvas.toDataURL('image/png').split(',')[1];
+        const fname='site-images/'+name.toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-'+el.symbol.toLowerCase()+'-tile.png';
+        showStatus('person-status','Generating element tile...');
+        await commitFile(fname,b64,'Add element tile for '+name,null,true);
+        photoSrc=fname;
+      }
+      showStatus('person-status','Updating people page...');
+      const yearStr=years?years+' \u2013 Present':'Present';
+      const eduLines=edu.split('\n').join('<br>\n        ');
+      const block='\n        <div class="person-row">\n      <img src="'+photoSrc+'" alt="'+name+'" onerror="this.style.display=\'none\'">\n      <div class="person-info">\n        <h4>'+name+' ('+yearStr+')</h4>\n        '+(hometown?'<p>Where are you from? '+hometown+'</p>\n        ':'')+(edu?'<p><strong>Education:</strong><br>\n        '+eduLines+'</p>\n        ':'')+(hobbies?'<p>Hobbies: '+hobbies+'</p>\n        ':'')+(fave?'<p>Favorite organism or molecule: '+fave+'</p>\n        ':'')+(email?'<p><a href="mailto:'+email+'">'+email+'</a></p>\n        ':'')+'</div>\n    </div>';
+      const file=await getFile('people.html');
+      let ph=decode(file.content);
+      const markers={'Graduate Student':'<!-- END GRAD STUDENTS -->','Postdoctoral Fellow':'<!-- END POSTDOCS -->','Research Scientist':'<!-- END RESEARCH SCIENTISTS -->','Lab Manager':'<!-- END LAB MANAGER -->','Undergraduate Researcher':'<!-- END UNDERGRADS -->'};
+      const marker=markers[role];
+      ph=marker&&ph.includes(marker)?ph.replace(marker,block+'\n    '+marker):ph.replace('</main>',block+'\n</main>');
+      await commitFile('people.html',ph,'Add lab member: '+name,file.sha);
+      showStatus('person-status','\u2705 '+name+' added! Site will update in ~1 minute.');
+      ['person-name','person-years','person-hometown','person-edu','person-hobbies','person-fave','person-email'].forEach(id=>document.getElementById(id).value='');
+      fi.value='';document.getElementById('photo-filename').textContent='No file chosen';
+      ['photo-preview-img','element-tile-preview','tile-label','person-preview'].forEach(id=>document.getElementById(id).style.display='none');
+      setTimeout(loadDeleteLists,3000);
+    }catch(e){showStatus('person-status','\u274C Error: '+e.message,true);}
+  }
 
 // ---- ADD PUBLICATIONS ----
 function previewPub() {
