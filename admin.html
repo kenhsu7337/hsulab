@@ -783,7 +783,19 @@ Rules:
 - "old" must be an exact verbatim substring of the current file content (copy it precisely including whitespace/newlines).
 - For news: add a new entry to news-data.js by inserting after "const HSU_LAB_NEWS = [" — use today's date formatted as YYYY-MM.
 - For publications: add to publications.html after '<h2>Journal Articles</h2>' using the existing pub-entry div structure. Auto-increment the pub number.
-- For people changes (graduation/departure): update or remove the person-row in people.html and add a news item.
+- For adding a NEW graduate student: insert a new person-row div in people.html inside the Graduate Students section. Find the last existing grad student person-row and insert the new one AFTER it. Use this exact structure (match surrounding indentation):
+    <div class="person-row">
+      <div class="person-photo-placeholder"></div>
+      <div class="person-info">
+        <h4>[Name] ([Year] - Present)</h4>
+        <p>Where are you from? [Hometown]</p>
+        <p><strong>Education:</strong><br>
+        [Degree], [Institution]</p>
+        <a href="mailto:[email]">[email]</a></p>
+      </div>
+    </div>
+- For adding a NEW postdoc or research scientist: same pattern but insert in the appropriate section.
+- For people leaving (graduation/departure): update or remove the person-row in people.html and add a news item.
 - Keep changes minimal and match existing code style exactly.
 - If a DOI is mentioned, use it as the URL; format the pub entry like existing entries.
 - Today's date is ${new Date().toISOString().slice(0,7)}.`;
@@ -797,8 +809,8 @@ ${files['news-data.js'].content.substring(0, 3000)}
 --- publications.html (first 6000 chars) ---
 ${files['publications.html'].content.substring(0, 6000)}
 
---- people.html (first 6000 chars) ---
-${files['people.html'].content.substring(0, 6000)}
+--- people.html (full content) ---
+${files['people.html'].content}
 
 --- index.html (first 4000 chars) ---
 ${files['index.html'].content.substring(0, 4000)}`;
