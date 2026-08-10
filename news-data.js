@@ -6,7 +6,7 @@ const HSU_LAB_NEWS = [
   {
     date: "2026-08",
     items: [
-      "Congrats to Xiaoding Jiang and co-authors on publishing in <a href='https://doi.org/10.1038/s41589-026-02289-9' target='_blank'><em>Nature Chemical Biology</em></a>! Their paper describes a covalent PFKL activator that turns cancer's sugar metabolism against it while simultaneously blocking fatty acid oxidation. Check out the <a href='https://cns.utexas.edu/news/research/experimental-drug-turns-cancers-favorite-fuel-sugar-against-it' target='_blank'>UT CNS highlight</a>!"
+      "Congrats to Xiaoding Jiang and co-authors on publishing in <a href='https://doi.org/10.1038/s41589-026-02289-9' target='_blank'><em>Nature Chemical Biology</em></a>! Their paper describes a covalent PFKL activator that turns cancer's sugar metabolism against it while simultaneously blocking fatty acid oxidation. Check out the <a href='https://news.utexas.edu/2026/08/05/experimental-drug-turns-cancers-favorite-fuel-sugar-against-it/' target='_blank'>UT News highlight</a>!"
     ]
   },
   {
