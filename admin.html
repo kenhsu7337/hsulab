@@ -98,6 +98,7 @@
     <div class="tab active" onclick="switchTab('news', event)">Add News</div>
     <div class="tab" onclick="switchTab('people', event)">Add People</div>
     <div class="tab" onclick="switchTab('publications', event)">Add Publication</div>
+    <div class="tab" onclick="switchTab('photos', event)">Add Photos</div>
     <div class="tab" onclick="switchTab('delete', event)">Delete</div>
     <div class="tab" onclick="switchTab('ai', event)">✨ AI Update</div>
   </div>
@@ -261,6 +262,31 @@
       <div id="delete-pub-status" class="status-msg"></div>
     </div>
   </div>
+
+  <!-- ADD PHOTOS TAB -->
+  <div id="tab-photos" class="tab-content">
+    <div class="section-box">
+      <h2>Add Photo Gallery</h2>
+      <p style="font-size:0.84rem;color:#666;margin-bottom:16px;">Upload photos for a lab event. They will be added as a new gallery at the top of the Photos page.</p>
+
+      <div class="form-group">
+        <label>Event Name</label>
+        <input type="text" id="photo-event-name" placeholder="e.g. Hsu Lab Retreat 2026">
+      </div>
+
+      <div class="form-group">
+        <label>Photos</label>
+        <input type="file" id="photo-files" accept="image/*" multiple style="padding:6px 0;">
+        <p style="font-size:0.78rem;color:#888;margin-top:4px;">Select one or more photos. Supported formats: JPG, PNG, GIF.</p>
+      </div>
+
+      <div id="photo-preview-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-bottom:16px;"></div>
+
+      <div id="photo-status" style="font-size:0.84rem;margin-bottom:12px;"></div>
+      <button class="btn btn-primary" onclick="submitPhotos()">Upload & Add Gallery</button>
+    </div>
+  </div>
+
 
   <!-- AI UPDATE TAB -->
   <div id="tab-ai" class="tab-content">
@@ -977,6 +1003,136 @@ ${files['index.html'].content.substring(0, 4000)}`;
     el.textContent = msg;
   }
   // ── END AI UPDATE ──────────────────────────────────────────────────────────
+
+
+// ---- ADD PHOTOS ----
+document.getElementById('photo-files').addEventListener('change', function() {
+  const grid = document.getElementById('photo-preview-grid');
+  grid.innerHTML = '';
+  Array.from(this.files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = document.createElement('img');
+      img.src = e.target.result;
+      img.style.cssText = 'width:100%;height:90px;object-fit:cover;border-radius:2px;';
+      grid.appendChild(img);
+    };
+    reader.readAsDataURL(file);
+  });
+});
+
+async function submitPhotos() {
+  const eventName = document.getElementById('photo-event-name').value.trim();
+  const files = document.getElementById('photo-files').files;
+  const statusEl = document.getElementById('photo-status');
+
+  if (!eventName) { statusEl.textContent = 'Please enter an event name.'; statusEl.style.color='#c00'; return; }
+  if (!files.length) { statusEl.textContent = 'Please select at least one photo.'; statusEl.style.color='#c00'; return; }
+
+  const token = getToken();
+  if (!token) { statusEl.textContent = 'GitHub token not set. Please log in again.'; statusEl.style.color='#c00'; return; }
+
+  statusEl.style.color = '#555';
+  statusEl.textContent = `Uploading 0 of ${files.length} photos...`;
+
+  const uploadedPaths = [];
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    const ext = file.name.split('.').pop().toLowerCase();
+    const safeName = eventName.toLowerCase().replace(/[^a-z0-9]+/g,'-') + '-' + (i+1) + '.' + ext;
+    const path = 'photos-files/' + safeName;
+
+    // Read as base64
+    const b64 = await new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(r.result.split(',')[1]);
+      r.onerror = rej;
+      r.readAsDataURL(file);
+    });
+
+    // Check if file exists (get sha if so)
+    let sha = null;
+    try {
+      const chk = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}`, {
+        headers: { Authorization: 'token ' + token }
+      });
+      if (chk.ok) { const d = await chk.json(); sha = d.sha; }
+    } catch(e) {}
+
+    const payload = { message: `Add photo: ${safeName}`, content: b64 };
+    if (sha) payload.sha = sha;
+
+    const r = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}`, {
+      method: 'PUT',
+      headers: { Authorization: 'token ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!r.ok) {
+      statusEl.textContent = `Failed to upload ${file.name}.`;
+      statusEl.style.color = '#c00';
+      return;
+    }
+
+    uploadedPaths.push(path);
+    statusEl.textContent = `Uploading ${i+1} of ${files.length} photos...`;
+  }
+
+  // Now update photos.html
+  statusEl.textContent = 'Updating Photos page...';
+
+  // Fetch current photos.html
+  const pr = await fetch(`https://api.github.com/repos/${REPO}/contents/photos.html`, {
+    headers: { Authorization: 'token ' + token }
+  });
+  const pd = await pr.json();
+  const photosHtml = atob(pd.content.replace(/\n/g,''));
+  const photosSha = pd.sha;
+
+  // Build new gallery block
+  const imgTags = uploadedPaths.map(p => `        <img src="${p}" alt="" onclick="openLightbox(this)">`).join('\n');
+  const newGallery = `
+    <div class="photo-group">
+      <h2>${eventName}</h2>
+      <div class="photo-grid">
+${imgTags}
+      </div>
+    </div>
+`;
+
+  // Insert after <div class="photos-section">
+  const insertAfter = '<div class="photos-section">';
+  const newPhotosHtml = photosHtml.replace(insertAfter, insertAfter + newGallery);
+
+  if (newPhotosHtml === photosHtml) {
+    statusEl.textContent = 'Could not find insertion point in Photos page.';
+    statusEl.style.color = '#c00';
+    return;
+  }
+
+  // Commit photos.html
+  const cr = await fetch(`https://api.github.com/repos/${REPO}/contents/photos.html`, {
+    method: 'PUT',
+    headers: { Authorization: 'token ' + token, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      message: `Add photo gallery: ${eventName}`,
+      content: btoa(unescape(encodeURIComponent(newPhotosHtml))),
+      sha: photosSha
+    })
+  });
+
+  if (cr.ok) {
+    statusEl.style.color = '#2a7a2a';
+    statusEl.textContent = `Done! Gallery "${eventName}" added with ${uploadedPaths.length} photo(s). Refresh hsulab.com/photos.html to verify.`;
+    document.getElementById('photo-event-name').value = '';
+    document.getElementById('photo-files').value = '';
+    document.getElementById('photo-preview-grid').innerHTML = '';
+  } else {
+    statusEl.style.color = '#c00';
+    statusEl.textContent = 'Failed to update Photos page.';
+  }
+}
 
 </script>
 </body>
