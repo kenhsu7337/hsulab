@@ -99,6 +99,7 @@
     <div class="tab" onclick="switchTab('people', event)">Add People</div>
     <div class="tab" onclick="switchTab('publications', event)">Add Publication</div>
     <div class="tab" onclick="switchTab('photos', event)">Add Photos</div>
+    <div class="tab" onclick="switchTab('alumni', event)">Alumni</div>
     <div class="tab" onclick="switchTab('delete', event)">Delete</div>
     <div class="tab" onclick="switchTab('ai', event)">✨ AI Update</div>
   </div>
@@ -236,6 +237,38 @@
       <button class="btn btn-secondary" onclick="submitPub()">Commit to GitHub</button>
       <div id="pub-preview" class="preview-box"></div>
       <div id="pub-status" class="status-msg"></div>
+    </div>
+  </div>
+
+
+  <!-- ALUMNI TAB -->
+  <div id="tab-alumni" class="tab-content">
+    <div class="section-box">
+      <h2>Add Alumni</h2>
+      <p style="font-size:0.84rem;color:#666;margin-bottom:16px;">Add a new entry to the Alumni page. Select the group and fill in the details.</p>
+
+      <div class="form-group">
+        <label>Group</label>
+        <select id="alumni-group">
+          <option value="grad">Graduate Student</option>
+          <option value="postdoc">Postdoctoral Fellow</option>
+          <option value="scientist">Research Scientist</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="alumni-name" placeholder="e.g. Jane Smith">
+      </div>
+      <div class="form-group">
+        <label>Hsu Lab Role</label>
+        <input type="text" id="alumni-role" placeholder="e.g. Graduate Student">
+      </div>
+      <div class="form-group">
+        <label>Current Position</label>
+        <input type="text" id="alumni-position" placeholder="e.g. Scientist, Genentech">
+      </div>
+      <div id="alumni-status" style="font-size:0.84rem;margin-bottom:12px;"></div>
+      <button class="btn btn-primary" onclick="submitAlumni()">Add Alumni</button>
     </div>
   </div>
 
@@ -1131,6 +1164,75 @@ ${imgTags}
   } else {
     statusEl.style.color = '#c00';
     statusEl.textContent = 'Failed to update Photos page.';
+  }
+}
+
+
+// ---- ALUMNI ----
+async function submitAlumni() {
+  const group = document.getElementById('alumni-group').value;
+  const name = document.getElementById('alumni-name').value.trim();
+  const role = document.getElementById('alumni-role').value.trim();
+  const position = document.getElementById('alumni-position').value.trim();
+  const statusEl = document.getElementById('alumni-status');
+
+  if (!name) { statusEl.textContent = 'Please enter a name.'; statusEl.style.color='#c00'; return; }
+  if (!role) { statusEl.textContent = 'Please enter a role.'; statusEl.style.color='#c00'; return; }
+
+  const token = getToken();
+  if (!token) { statusEl.textContent = 'GitHub token not set.'; statusEl.style.color='#c00'; return; }
+
+  statusEl.style.color = '#555';
+  statusEl.textContent = 'Updating alumni page...';
+
+  // Fetch current alumni.html
+  const r = await fetch(`https://api.github.com/repos/${REPO}/contents/alumni.html`, {
+    headers: { Authorization: 'token ' + token }
+  });
+  const d = await r.json();
+  const alumniHtml = atob(d.content.replace(/\n/g,''));
+  const alumniSha = d.sha;
+
+  // Build new row
+  const newRow = `
+          <tr><td>${name}</td><td>${role}</td><td>${position || ''}</td></tr>`;
+
+  // Find correct insertion point based on group
+  const markers = {
+    grad: '<!-- END GRAD STUDENTS -->',
+    postdoc: '<!-- END POSTDOCS -->',
+    scientist: '<!-- END RESEARCH SCIENTISTS -->'
+  };
+  const marker = markers[group];
+  if (!alumniHtml.includes(marker)) {
+    statusEl.textContent = 'Could not find insertion point in alumni page.';
+    statusEl.style.color = '#c00';
+    return;
+  }
+
+  const newAlumniHtml = alumniHtml.replace(marker, newRow + '\n        ' + marker);
+
+  // Commit
+  const cr = await fetch(`https://api.github.com/repos/${REPO}/contents/alumni.html`, {
+    method: 'PUT',
+    headers: { Authorization: 'token ' + token, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      message: `Add alumni: ${name}`,
+      content: btoa(unescape(encodeURIComponent(newAlumniHtml))),
+      sha: alumniSha
+    })
+  });
+
+  if (cr.ok) {
+    statusEl.style.color = '#2a7a2a';
+    statusEl.textContent = `Done! ${name} added to alumni page.`;
+    document.getElementById('alumni-name').value = '';
+    document.getElementById('alumni-role').value = '';
+    document.getElementById('alumni-position').value = '';
+  } else {
+    const err = await cr.json();
+    statusEl.style.color = '#c00';
+    statusEl.textContent = 'Failed: ' + (err.message || 'unknown error');
   }
 }
 
