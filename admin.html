@@ -776,7 +776,7 @@ async function deletePerson(name) {
   let {html,sha}=el._data;
   // Remove the entire person-row div containing this h4
   const escaped=name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-  const regex=new RegExp(`\\s*<div class="person-row">[\\s\\S]*?<h4>${escaped}<\\/h4>[\\s\\S]*?<\\/div>\\s*<\\/div>`,'m');
+  const regex=new RegExp(`\\n?[ \\t]*<div class="person-row">[\\s\\S]*?<h4>${escaped}[\\s\\S]*?<\\/div>\\s*<\\/div>\\s*<\\/div>`,'m');
   html=html.replace(regex,'');
   showStatus('delete-people-status','Deleting...');
   try {
