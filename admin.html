@@ -787,10 +787,23 @@ async function deletePerson(name) {
   if(!confirm(`Delete ${name} from the people page?`)) return;
   const el=document.getElementById('delete-people-list');
   let {html,sha}=el._data;
-  // Remove the entire person-row div containing this h4
-  const escaped=name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-  const regex=new RegExp(`\\n?[ \\t]*<div class="person-row">[\\s\\S]*?<h4>${escaped}[\\s\\S]*?<\\/div>\\s*<\\/div>\\s*<\\/div>`,'m');
-  html=html.replace(regex,'');
+  // Robustly find and remove person-row by locating h4 with name, then walking divs
+  const h4Idx=html.indexOf('<h4>'+name);
+  if(h4Idx===-1){showStatus('delete-people-status',`\u274C Could not find ${name} in the page.`,true);return;}
+  const rowStart=html.lastIndexOf('<div class="person-row">',h4Idx);
+  if(rowStart===-1){showStatus('delete-people-status',`\u274C Could not locate person-row.`,true);return;}
+  // Walk divs to find matching close
+  let depth=0,pos=rowStart,rowEnd=-1;
+  while(pos<html.length){
+    const nO=html.indexOf('<div',pos+1),nC=html.indexOf('</div>',pos+1);
+    if(nC===-1)break;
+    if(nO!==-1&&nO<nC){depth++;pos=nO;}
+    else{if(depth===0){rowEnd=nC+6;break;}depth--;pos=nC+6;}
+  }
+  if(rowEnd===-1){showStatus('delete-people-status',`\u274C Could not find closing div.`,true);return;}
+  const before=html.slice(0,rowStart).trimEnd();
+  const after=html.slice(rowEnd).replace(/^\n+/,'\n');
+  html=before+'\n'+after;
   showStatus('delete-people-status','Deleting...');
   try {
     await commitFile('people.html',html,`Remove lab member: ${name}`,sha);
