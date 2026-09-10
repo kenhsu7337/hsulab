@@ -4,6 +4,12 @@
 
 const HSU_LAB_NEWS = [
   {
+    date: "2026-09",
+    items: [
+      "Check out these two news articles highlighting <a href='https://www.yahoo.com/news/science/articles/two-ut-studies-point-potential-110000840.html?action=scout&guccounter=1' target='Xiaoding's research'>Xiaoding's research</a> on new ways to target cancer and <a href='https://chemistry.utexas.edu/news/research/hitting-hard-hit-ut-austin-team-charts-new-territory-covalent-drug-discovery' target='Zhihong's work'>Zhihong's work</a> on new tools for drug discovery!"
+    ]
+  },
+  {
     date: "2026-08",
     items: [
       "Congrats to Xiaoding Jiang and co-authors on publishing in <a href='https://doi.org/10.1038/s41589-026-02289-9' target='_blank'><em>Nature Chemical Biology</em></a>! Their paper describes a covalent PFKL activator that turns cancer's sugar metabolism against it while simultaneously blocking fatty acid oxidation. Check out the <a href='https://news.utexas.edu/2026/08/05/experimental-drug-turns-cancers-favorite-fuel-sugar-against-it/' target='_blank'>UT News highlight</a>!",
