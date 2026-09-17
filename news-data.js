@@ -6,6 +6,12 @@ const HSU_LAB_NEWS = [
   {
     date: "2026-09",
     items: [
+      "Congrats to Payton on publishing her work demonstrating how empty liposomes can alter cellular biology and enzyme activity in <a href='https://doi.org/10.1039/d6sc02559e' target='Chemical Science'>Chemical Science</a>!"
+    ]
+  },
+  {
+    date: "2026-09",
+    items: [
       "Check out these two news articles highlighting <a href='https://www.yahoo.com/news/science/articles/two-ut-studies-point-potential-110000840.html?action=scout&guccounter=1' target='Xiaoding's research'>Xiaoding's research</a> on new ways to target cancer and <a href='https://chemistry.utexas.edu/news/research/hitting-hard-hit-ut-austin-team-charts-new-territory-covalent-drug-discovery' target='Zhihong's work'>Zhihong's work</a> on new tools for drug discovery!"
     ]
   },
