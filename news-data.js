@@ -6,7 +6,7 @@ const HSU_LAB_NEWS = [
   {
     date: "2026-09",
     items: [
-      "Congrats to Payton on publishing her work demonstrating how empty liposomes can alter cellular biology and enzyme activity in <a href='https://doi.org/10.1039/d6sc02559e' target='Chemical Science'>Chemical Science</a>!"
+      "Congrats to Payton on publishing her work demonstrating how empty liposomes can alter cellular biology and enzyme activity in <a href='https://doi.org/10.1039/d6sc02559e' target='Chemical Science'><em>Chemical Science</em></a>!"
     ]
   },
   {
